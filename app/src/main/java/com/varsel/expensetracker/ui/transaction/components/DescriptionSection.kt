@@ -26,10 +26,14 @@ fun DescriptionSection(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
 <<<<<<< HEAD
+<<<<<<< HEAD
             modifier = Modifier.padding(bottom = 6.dp)
 =======
             modifier = Modifier.padding(bottom = 8.dp)
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+            modifier = Modifier.padding(bottom = 6.dp)
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
         )
 
         OutlinedTextField(
@@ -37,14 +41,19 @@ fun DescriptionSection(
             onValueChange = onDescriptionChanged,
             modifier = Modifier.fillMaxWidth(),
 <<<<<<< HEAD
+<<<<<<< HEAD
             shape = RoundedCornerShape(14.dp),
 =======
             shape = RoundedCornerShape(16.dp),
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+            shape = RoundedCornerShape(14.dp),
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
+<<<<<<< HEAD
 <<<<<<< HEAD
             singleLine = true,
             maxLines = 2,
@@ -52,6 +61,10 @@ fun DescriptionSection(
             singleLine = false,
             minLines = 2,
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+            singleLine = true,
+            maxLines = 2,
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
             placeholder = {
                 Text("Enter transaction narration or merchant name")
             }

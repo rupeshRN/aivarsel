@@ -109,6 +109,7 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("petrol", Category.FUEL_AND_TRANSPORT, 100),
         KeywordRule("diesel", Category.FUEL_AND_TRANSPORT, 100),
         KeywordRule("fuel", Category.FUEL_AND_TRANSPORT, 100),
+<<<<<<< HEAD
 
         // Utilities
         KeywordRule("recharge", Category.UTILITIES, 100),
@@ -129,8 +130,13 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("recharge", Category.MOBILE, 100),
         KeywordRule("airtel", Category.UTILITIES, 95),
         KeywordRule("jio", Category.UTILITIES, 95),
+=======
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
 
         // Utilities
+        KeywordRule("recharge", Category.UTILITIES, 100),
+        KeywordRule("airtel", Category.UTILITIES, 95),
+        KeywordRule("jio", Category.UTILITIES, 95),
         KeywordRule("electricity", Category.UTILITIES, 95),
         KeywordRule("water", Category.UTILITIES, 95),
         KeywordRule("gas", Category.UTILITIES, 95),

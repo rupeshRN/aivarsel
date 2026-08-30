@@ -21,12 +21,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 <<<<<<< HEAD
+<<<<<<< HEAD
 import com.varsel.expensetracker.category.CategoryIconCatalog
 import com.varsel.expensetracker.ui.design.CategoryPalette
 =======
 import androidx.compose.ui.unit.sp
 import com.varsel.expensetracker.category.CategoryMetadata
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+import com.varsel.expensetracker.category.CategoryIconCatalog
+import com.varsel.expensetracker.ui.design.CategoryPalette
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
 import com.varsel.expensetracker.ui.model.TransactionUiModel
 
 @Composable
@@ -112,6 +117,9 @@ fun RecentTransactionCard(
     val incomeColor = if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
     val expenseColor = if (isDark) Color(0xFFFF8A80) else Color(0xFFB71C1C)
 
+    val categoryColor = CategoryPalette.colorFor(transaction.category)
+    val categoryIcon = CategoryIconCatalog.iconFor(transaction.category)
+
     Row(
 >>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
         modifier = modifier
@@ -124,21 +132,14 @@ fun RecentTransactionCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Category Emoji Avatar with subtle semantic tint
-        val emoji = CategoryMetadata.emojiForCategory(
-            transaction.category,
-            isIncome = transaction.isIncome
-        )
+        // Category Icon Avatar with standardized vector icon and semantic palette tint
         Surface(
             shape = CircleShape,
-            color = if (transaction.isIncome) {
-                incomeColor.copy(alpha = 0.12f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.70f)
-            },
+            color = categoryColor.copy(alpha = 0.14f),
             modifier = Modifier.size(40.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
+<<<<<<< HEAD
                 Text(
 <<<<<<< HEAD
                     text = transaction.title,
@@ -205,6 +206,13 @@ fun RecentTransactionCard(
                     text = emoji,
                     fontSize = 18.sp
 >>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
+=======
+                Icon(
+                    imageVector = categoryIcon,
+                    contentDescription = transaction.category,
+                    tint = categoryColor,
+                    modifier = Modifier.size(20.dp)
+>>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
                 )
             }
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
