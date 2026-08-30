@@ -24,6 +24,7 @@ import java.util.Locale
 
 @Composable
 fun TransactionInfoSection(
+<<<<<<< HEAD
     transaction: Transaction,
     modifier: Modifier = Modifier
 ) {
@@ -33,6 +34,13 @@ fun TransactionInfoSection(
     val reference = transaction.referenceNumber?.takeIf { it.isNotBlank() } ?: "Not available"
     val source = if (transaction.referenceNumber.isNullOrBlank()) "Manual Entry" else "Bank Statement Import"
 
+=======
+    amount: String,
+    date: String,
+    type: String,
+    modifier: Modifier = Modifier
+) {
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -57,6 +65,7 @@ fun TransactionInfoSection(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
+<<<<<<< HEAD
 
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -87,6 +96,29 @@ fun TransactionInfoSection(
                 title = "Ledger Status",
                 value = "Settled & Verified"
             )
+=======
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                thickness = 1.dp
+            )
+
+            InfoRow(
+                title = "Amount",
+                value = amount,
+                isEmphasized = true
+            )
+
+            InfoRow(
+                title = "Date",
+                value = date
+            )
+
+            InfoRow(
+                title = "Type",
+                value = type
+            )
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
         }
     }
 }
@@ -117,4 +149,7 @@ private fun InfoRow(
     }
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)

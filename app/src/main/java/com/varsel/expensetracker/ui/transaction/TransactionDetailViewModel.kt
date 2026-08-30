@@ -117,6 +117,9 @@ class TransactionDetailViewModel @Inject constructor(
                 categoryDao.getAllCategories()
             ) { allTransactions, allGroups, allAllocations, dbCategories ->
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                 val currentTx = allTransactions.firstOrNull { it.id == transactionId }
                 val isIncome = currentTx?.let { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT } ?: false
                 val staticCategoryNames = CategoryMetadata.categoriesFor(isIncome).map { it.id }
@@ -124,9 +127,12 @@ class TransactionDetailViewModel @Inject constructor(
                     .filter { it.type == "BOTH" || (isIncome && it.type == "INCOME") || (!isIncome && it.type == "EXPENSE") }
                     .map { it.name }
                 val categoryNames = (filteredDbCategories + staticCategoryNames).distinct()
+<<<<<<< HEAD
 =======
                 val categoryNames = (dbCategories.map { it.name } + loadCategories()).distinct()
 >>>>>>> e822426 (feat: enhance category metadata and transaction logic)
+=======
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                 Quad(allTransactions, allGroups, allAllocations, categoryNames)
             }.collectLatest { (allTransactions, allGroups, allAllocations, categoryNames) ->
                 updateTransactionDetailState(

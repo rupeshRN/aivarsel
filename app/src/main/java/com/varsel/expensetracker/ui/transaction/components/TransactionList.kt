@@ -40,6 +40,7 @@ fun LazyListScope.transactionList(
             TransactionEmptyState()
         }
     } else {
+<<<<<<< HEAD
         items(
             items = transactions,
             key = { it.id }
@@ -60,6 +61,39 @@ fun LazyListScope.transactionList(
                     transaction = item,
                     onClick = { onTransactionClick(item) }
                 )
+=======
+        item(key = "transactions_container") {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                border = BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 6.dp)
+                ) {
+                    transactions.forEachIndexed { index, item ->
+                        RecentTransactionCard(
+                            transaction = item,
+                            onClick = { onTransactionClick(item) }
+                        )
+
+                        if (index < transactions.size - 1) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                                thickness = 1.dp
+                            )
+                        }
+                    }
+                }
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             }
         }
     }

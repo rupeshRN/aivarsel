@@ -25,20 +25,33 @@ fun DescriptionSection(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
+<<<<<<< HEAD
             modifier = Modifier.padding(bottom = 6.dp)
+=======
+            modifier = Modifier.padding(bottom = 8.dp)
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
         )
 
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChanged,
             modifier = Modifier.fillMaxWidth(),
+<<<<<<< HEAD
             shape = RoundedCornerShape(14.dp),
+=======
+            shape = RoundedCornerShape(16.dp),
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
+<<<<<<< HEAD
             singleLine = true,
             maxLines = 2,
+=======
+            singleLine = false,
+            minLines = 2,
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             placeholder = {
                 Text("Enter transaction narration or merchant name")
             }

@@ -602,21 +602,29 @@ private fun IncomeExpensePill(
 =======
     val isDark = isSystemInDarkTheme()
 
-    // Semantic Green & Red Palettes
+    // High Contrast Semantic Green & Red Palettes
     val primaryColor = if (isIncome) {
-        if (isDark) Color(0xFF66BB6A) else Color(0xFF2E7D32)
+        if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
     } else {
-        if (isDark) Color(0xFFEF5350) else Color(0xFFC62828)
+        if (isDark) Color(0xFFFF8A80) else Color(0xFFB71C1C)
+    }
+
+    val pillBackground = if (isDark) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.65f)
+    } else {
+        Color(0xFFFFFFFF).copy(alpha = 0.92f)
     }
 
 >>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = if (isDark) 0.35f else 0.55f),
+        color = pillBackground,
+        shadowElevation = if (isDark) 0.dp else 1.dp,
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.08f)
+            if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.30f)
+            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.20f)
         )
     ) {
         Column(
@@ -645,7 +653,7 @@ private fun IncomeExpensePill(
 =======
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     Icon(
                         imageVector = if (isIncome) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
@@ -656,7 +664,7 @@ private fun IncomeExpensePill(
                     Text(
                         text = title,
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = primaryColor
                     )
                 }
@@ -668,6 +676,9 @@ private fun IncomeExpensePill(
                         text = "$arrow${abs(pct).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                         fontWeight = FontWeight.ExtraBold,
                         color = primaryColor
 =======
@@ -689,6 +700,7 @@ private fun IncomeExpensePill(
             Text(
                 text = if (isBalanceHidden) "₹ ••••" else "₹%,.2f".format(amount),
 <<<<<<< HEAD
+<<<<<<< HEAD
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = primaryColor
 =======
@@ -698,6 +710,9 @@ private fun IncomeExpensePill(
                 color = MaterialTheme.colorScheme.onSurface
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 =======
+=======
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+>>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                 color = primaryColor
 >>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             )
