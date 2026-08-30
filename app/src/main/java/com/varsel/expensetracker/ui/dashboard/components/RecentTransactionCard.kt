@@ -1,7 +1,11 @@
 package com.varsel.expensetracker.ui.dashboard.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+<<<<<<< HEAD
 import androidx.compose.foundation.isSystemInDarkTheme
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+<<<<<<< HEAD
 import com.varsel.expensetracker.category.CategoryIconCatalog
 import com.varsel.expensetracker.ui.design.CategoryPalette
+=======
+import androidx.compose.ui.unit.sp
+import com.varsel.expensetracker.category.CategoryMetadata
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 import com.varsel.expensetracker.ui.model.TransactionUiModel
 
 @Composable
@@ -23,6 +32,7 @@ fun RecentTransactionCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
+<<<<<<< HEAD
     val isDark = isSystemInDarkTheme()
     val incomeColor = if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
     val expenseColor = if (isDark) Color(0xFFFF8A80) else Color(0xFFB71C1C)
@@ -91,9 +101,90 @@ fun RecentTransactionCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+=======
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(enabled = onClick != null) {
+                onClick?.invoke()
+            },
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Category Emoji Avatar
+            val emoji = CategoryMetadata.emojiForCategory(
+                transaction.category,
+                isIncome = transaction.isIncome
+            )
+            Surface(
+                shape = CircleShape,
+                color = if (transaction.isIncome) {
+                    Color(0xFF2E7D32).copy(alpha = 0.12f)
+                } else {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                },
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = emoji,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+
+            // Description & Metadata
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = transaction.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = transaction.category,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+
+                    Text(
+                        text = transaction.dateText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             }
         }
 
+<<<<<<< HEAD
         // Amount Display with semantic green / red colors
         Column(
             horizontalAlignment = Alignment.End,
@@ -105,6 +196,24 @@ fun RecentTransactionCard(
                 fontWeight = FontWeight.Bold,
                 color = if (transaction.isIncome) incomeColor else expenseColor
             )
+=======
+            // Amount Display
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = if (transaction.isIncome) "+${transaction.amountText}" else "-${transaction.amountText}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (transaction.isIncome) {
+                        Color(0xFF2E7D32)
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+                )
+            }
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
         }
     }
 }

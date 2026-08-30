@@ -1,16 +1,23 @@
 package com.varsel.expensetracker.ui.dashboard.components
 
 import androidx.compose.foundation.background
+<<<<<<< HEAD
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+<<<<<<< HEAD
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ChevronRight
+=======
+import androidx.compose.material.icons.outlined.Lightbulb
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,6 +33,7 @@ import com.varsel.expensetracker.ui.model.InsightType
 @Composable
 fun InsightsCard(
     insights: List<FinancialInsight>,
+<<<<<<< HEAD
     modifier: Modifier = Modifier,
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToTransactions: () -> Unit = {}
@@ -41,6 +49,28 @@ fun InsightsCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
+=======
+    modifier: Modifier = Modifier
+) {
+    if (insights.isEmpty()) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -48,6 +78,7 @@ fun InsightsCard(
             ) {
                 Surface(
                     shape = CircleShape,
+<<<<<<< HEAD
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                     modifier = Modifier.size(26.dp)
                 ) {
@@ -57,18 +88,35 @@ fun InsightsCard(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(15.dp)
+=======
+                    color = Color(0xFFFFB300).copy(alpha = 0.15f),
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lightbulb,
+                            contentDescription = null,
+                            tint = Color(0xFFFFB300),
+                            modifier = Modifier.size(16.dp)
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         )
                     }
                 }
 
                 Text(
+<<<<<<< HEAD
                     text = "Actionable Insights",
                     style = MaterialTheme.typography.titleMedium,
+=======
+                    text = "Financial Insights",
+                    style = MaterialTheme.typography.titleSmall,
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
+<<<<<<< HEAD
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
@@ -98,12 +146,24 @@ fun InsightsCard(
                         }
                     }
                 )
+=======
+            insights.forEachIndexed { index, insight ->
+                if (index > 0) {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                        thickness = 1.dp
+                    )
+                }
+
+                InsightItemRow(insight = insight)
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             }
         }
     }
 }
 
 @Composable
+<<<<<<< HEAD
 private fun ActionableInsightTile(
     insight: FinancialInsight,
     onClick: () -> Unit
@@ -205,6 +265,42 @@ private fun ActionableInsightTile(
                 contentDescription = "View details",
                 tint = accentColor.copy(alpha = 0.85f),
                 modifier = Modifier.size(16.dp)
+=======
+private fun InsightItemRow(
+    insight: FinancialInsight
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = insight.emoji,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(top = 2.dp)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = insight.title,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = when (insight.type) {
+                    InsightType.POSITIVE -> Color(0xFF2E7D32)
+                    InsightType.ATTENTION -> MaterialTheme.colorScheme.error
+                    InsightType.NEUTRAL -> MaterialTheme.colorScheme.onSurface
+                }
+            )
+
+            Text(
+                text = insight.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 16.sp
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             )
         }
     }

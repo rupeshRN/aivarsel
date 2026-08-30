@@ -98,9 +98,13 @@ fun DashboardScreen(
 
                 item(key = "insights") {
                     InsightsCard(
+<<<<<<< HEAD
                         insights = uiState.insights,
                         onNavigateToAnalytics = onNavigateToAnalytics,
                         onNavigateToTransactions = onNavigateToAllTransactions
+=======
+                        insights = uiState.insights
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                     )
                 }
 

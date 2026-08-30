@@ -547,6 +547,7 @@ private fun calculateEffectiveExpense(
 
     private fun detectBankName(transactions: List<Transaction>): String {
         for (t in transactions) {
+<<<<<<< HEAD
             val ref = t.referenceNumber.orEmpty().uppercase()
             val desc = t.description.uppercase()
             val fp = t.transactionFingerprint.orEmpty().uppercase()
@@ -576,6 +577,28 @@ private fun calculateEffectiveExpense(
             }
         }
         return "Indian Bank"
+=======
+            val combined = "${t.description} ${t.referenceNumber.orEmpty()} ${t.transactionFingerprint.orEmpty()}".uppercase()
+            when {
+                combined.contains("HDFC") -> return "HDFC Bank"
+                combined.contains("SBI") || combined.contains("STATE BANK") || combined.contains("SBIN") -> return "SBI"
+                combined.contains("ICICI") -> return "ICICI Bank"
+                combined.contains("AXIS") || combined.contains("UTIB") -> return "Axis Bank"
+                combined.contains("KOTAK") || combined.contains("KKBK") -> return "Kotak Bank"
+                combined.contains("CANARA") || combined.contains("CNRB") -> return "Canara Bank"
+                combined.contains("BARODA") || combined.contains("BOB") || combined.contains("BARB") -> return "Bank of Baroda"
+                combined.contains("PNB") || combined.contains("PUNJAB") || combined.contains("PUNB") -> return "PNB"
+                combined.contains("IDFC") -> return "IDFC FIRST"
+                combined.contains("FEDERAL") || combined.contains("FDRL") -> return "Federal Bank"
+                combined.contains("INDUSIND") || combined.contains("INDB") -> return "IndusInd Bank"
+                combined.contains("UNION") || combined.contains("UBIN") -> return "Union Bank"
+                combined.contains("PAYTM") || combined.contains("PYTM") -> return "Paytm Payments"
+                combined.contains("AIRTEL") -> return "Airtel Payments"
+                combined.contains("YES BANK") || combined.contains("YESB") -> return "Yes Bank"
+            }
+        }
+        return "Bank Account"
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
     }
 
     private fun generateInsights(
@@ -600,12 +623,19 @@ private fun calculateEffectiveExpense(
             if (topCategory != null && topCategory.value > 0) {
                 val percentage = ((topCategory.value / currentMonthExpense) * 100).toInt()
                 val emoji = com.varsel.expensetracker.category.CategoryMetadata.emojiForCategory(topCategory.key, isIncome = false)
+<<<<<<< HEAD
                 val formattedAmount = "₹%,.0f".format(topCategory.value)
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                 insights.add(
                     FinancialInsight(
                         emoji = emoji,
                         title = "${topCategory.key} is top expense",
+<<<<<<< HEAD
                         description = "Accounts for $percentage% ($formattedAmount) of your spending this month.",
+=======
+                        description = "Accounts for $percentage% (₹%,.0f) of your spending this month.".format(topCategory.value),
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         type = InsightType.NEUTRAL
                     )
                 )
@@ -615,24 +645,39 @@ private fun calculateEffectiveExpense(
         // 2. Month-over-Month Velocity
         if (expenseChangePercent != null && previousMonthExpense > 0) {
             val diff = abs(currentMonthExpense - previousMonthExpense)
+<<<<<<< HEAD
             val formattedDiff = "₹%,.0f".format(diff)
             if (expenseChangePercent < 0) {
                 val pctVal = abs(expenseChangePercent.toInt())
+=======
+            if (expenseChangePercent < 0) {
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                 insights.add(
                     FinancialInsight(
                         emoji = "📉",
                         title = "Spending is down",
+<<<<<<< HEAD
                         description = "You spent $formattedDiff less than this time last month (↓ $pctVal%).",
+=======
+                        description = "You spent ₹%,.0f less than this time last month (↓ %d%%).".format(diff, abs(expenseChangePercent.toInt())),
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         type = InsightType.POSITIVE
                     )
                 )
             } else if (expenseChangePercent > 10) {
+<<<<<<< HEAD
                 val pctVal = expenseChangePercent.toInt()
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                 insights.add(
                     FinancialInsight(
                         emoji = "📈",
                         title = "Spending has increased",
+<<<<<<< HEAD
                         description = "You're spending $pctVal% ($formattedDiff) more compared to last month.",
+=======
+                        description = "You're spending %d%% (₹%,.0f) more compared to last month.".format(expenseChangePercent.toInt(), diff),
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         type = InsightType.ATTENTION
                     )
                 )
@@ -643,23 +688,37 @@ private fun calculateEffectiveExpense(
         if (currentMonthIncome > 0) {
             val netSavings = currentMonthIncome - currentMonthExpense
             val savingsRate = ((netSavings / currentMonthIncome) * 100).toInt()
+<<<<<<< HEAD
             val formattedSavings = "₹%,.0f".format(netSavings)
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             if (netSavings >= 0) {
                 insights.add(
                     FinancialInsight(
                         emoji = "💰",
                         title = "Net Savings: $savingsRate%",
+<<<<<<< HEAD
                         description = "$formattedSavings net surplus saved from this month's income.",
+=======
+                        description = "₹%,.0f net surplus saved from this month's income.".format(netSavings),
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         type = InsightType.POSITIVE
                     )
                 )
             } else {
+<<<<<<< HEAD
                 val formattedDeficit = "₹%,.0f".format(abs(netSavings))
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                 insights.add(
                     FinancialInsight(
                         emoji = "⚠️",
                         title = "Deficit this month",
+<<<<<<< HEAD
                         description = "Expenses exceeded total income by $formattedDeficit this month.",
+=======
+                        description = "Expenses exceeded total income by ₹%,.0f this month.".format(abs(netSavings)),
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                         type = InsightType.ATTENTION
                     )
                 )

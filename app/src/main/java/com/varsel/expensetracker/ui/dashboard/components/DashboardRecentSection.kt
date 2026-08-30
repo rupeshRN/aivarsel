@@ -1,7 +1,10 @@
 package com.varsel.expensetracker.ui.dashboard.components
 
 import androidx.compose.foundation.layout.*
+<<<<<<< HEAD
 import androidx.compose.foundation.shape.RoundedCornerShape
+=======
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material3.*
@@ -21,7 +24,11 @@ fun DashboardRecentSection(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
+<<<<<<< HEAD
         verticalArrangement = Arrangement.spacedBy(8.dp)
+=======
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -58,8 +65,13 @@ fun DashboardRecentSection(
         if (transactions.isEmpty()) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
+<<<<<<< HEAD
                 shape = RoundedCornerShape(18.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.30f)
+=======
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             ) {
                 Column(
                     modifier = Modifier
@@ -86,6 +98,7 @@ fun DashboardRecentSection(
                 }
             }
         } else {
+<<<<<<< HEAD
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -115,6 +128,13 @@ fun DashboardRecentSection(
                         }
                     }
                 }
+=======
+            transactions.take(5).forEach { transaction ->
+                RecentTransactionCard(
+                    transaction = transaction,
+                    onClick = { onTransactionClick(transaction) }
+                )
+>>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
             }
         }
     }
