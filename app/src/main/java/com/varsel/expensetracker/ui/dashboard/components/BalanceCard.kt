@@ -7,6 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -58,15 +61,20 @@ fun BalanceCard(
 ) {
     var isBalanceHidden by remember { mutableStateOf(false) }
 <<<<<<< HEAD
+<<<<<<< HEAD
     val isDark = isSystemInDarkTheme()
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+    val isDark = isSystemInDarkTheme()
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
 
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         //--------------------------------------------------
+<<<<<<< HEAD
 <<<<<<< HEAD
         // Hero Balance Card with Rich Tonal Depth Gradient
         //--------------------------------------------------
@@ -154,48 +162,105 @@ fun BalanceCard(
                             letterSpacing = (-1).sp
 =======
         // Main Hero Balance Card
+=======
+        // Hero Balance Card with Rich Tonal Depth Gradient
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
         //--------------------------------------------------
-        Card(
+        val heroGradient = Brush.linearGradient(
+            colors = if (isDark) {
+                listOf(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+                    MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+                )
+            } else {
+                listOf(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
+                )
+            }
+        )
+
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            shape = RoundedCornerShape(26.dp),
+            shadowElevation = if (isDark) 2.dp else 4.dp,
+            tonalElevation = 4.dp,
+            border = androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = if (isDark) 0.25f else 0.18f)
+            )
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .background(heroGradient)
             ) {
-                // Header with Privacy Eye Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp, vertical = 22.dp),
+                    verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
-                    Text(
-                        text = "Net Liquid Balance",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                    )
-
-                    IconButton(
-                        onClick = { isBalanceHidden = !isBalanceHidden },
-                        modifier = Modifier.size(28.dp)
+                    // Header with Privacy Eye Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+<<<<<<< HEAD
                         Icon(
                             imageVector = if (isBalanceHidden) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = if (isBalanceHidden) "Show balance" else "Hide balance",
                             tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                             modifier = Modifier.size(18.dp)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "Net Liquid Balance",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.5.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { isBalanceHidden = !isBalanceHidden },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isBalanceHidden) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                contentDescription = if (isBalanceHidden) "Show balance" else "Hide balance",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    // Dominant Hero Balance Amount Display
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = if (isBalanceHidden) "₹ ••••••••" else "₹%,.2f".format(summary.totalBalance),
+                            style = MaterialTheme.typography.displaySmall.copy(
+                                fontSize = 38.sp,
+                                lineHeight = 44.sp
+                            ),
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            letterSpacing = (-1).sp
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                         )
                     }
-                }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
@@ -239,6 +304,13 @@ fun BalanceCard(
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
                     )
 
+=======
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                        thickness = 1.dp
+                    )
+
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                     // Monthly Income and Expense Pills with Strong Semantic Styling
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -472,6 +544,7 @@ private fun IncomeExpensePill(
     changePercent: Double?
 ) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     val isDark = isSystemInDarkTheme()
 
     // High Contrast Semantic Green & Red Palettes
@@ -526,19 +599,36 @@ private fun IncomeExpensePill(
                 }
 
 =======
+=======
+    val isDark = isSystemInDarkTheme()
+
+    // Semantic Green & Red Palettes
+    val primaryColor = if (isIncome) {
+        if (isDark) Color(0xFF66BB6A) else Color(0xFF2E7D32)
+    } else {
+        if (isDark) Color(0xFFEF5350) else Color(0xFFC62828)
+    }
+
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = if (isDark) 0.35f else 0.55f),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.08f)
+        )
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
+<<<<<<< HEAD
                 Icon(
                     imageVector = if (isIncome) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
                     contentDescription = null,
@@ -552,6 +642,26 @@ private fun IncomeExpensePill(
                 )
                 
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isIncome) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
+                        contentDescription = null,
+                        tint = primaryColor,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = primaryColor
+                    )
+                }
+
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                 changePercent?.let { pct ->
                     val arrow = if (pct > 0) "↑" else "↓"
                     Text(
@@ -562,12 +672,16 @@ private fun IncomeExpensePill(
                         color = primaryColor
 =======
                         fontWeight = FontWeight.Bold,
+<<<<<<< HEAD
                         color = if (isIncome) {
                             if (pct >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
                         } else {
                             if (pct <= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
                         }
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        color = primaryColor
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                     )
                 }
             }
@@ -580,8 +694,12 @@ private fun IncomeExpensePill(
 =======
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
+<<<<<<< HEAD
                 color = MaterialTheme.colorScheme.onSurface
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                color = primaryColor
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             )
         }
     }
@@ -597,6 +715,7 @@ private fun BankAccountCard(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
 <<<<<<< HEAD
+<<<<<<< HEAD
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
@@ -607,6 +726,12 @@ private fun BankAccountCard(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
         )
     ) {
         Column(

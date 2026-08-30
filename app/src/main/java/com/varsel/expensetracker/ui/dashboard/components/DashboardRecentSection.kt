@@ -2,9 +2,13 @@ package com.varsel.expensetracker.ui.dashboard.components
 
 import androidx.compose.foundation.layout.*
 <<<<<<< HEAD
+<<<<<<< HEAD
 import androidx.compose.foundation.shape.RoundedCornerShape
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+import androidx.compose.foundation.shape.RoundedCornerShape
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material3.*
@@ -25,10 +29,14 @@ fun DashboardRecentSection(
     Column(
         modifier = modifier.fillMaxWidth(),
 <<<<<<< HEAD
+<<<<<<< HEAD
         verticalArrangement = Arrangement.spacedBy(8.dp)
 =======
         verticalArrangement = Arrangement.spacedBy(10.dp)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -66,12 +74,17 @@ fun DashboardRecentSection(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
 <<<<<<< HEAD
+<<<<<<< HEAD
                 shape = RoundedCornerShape(18.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.30f)
 =======
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                shape = RoundedCornerShape(18.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.30f)
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             ) {
                 Column(
                     modifier = Modifier
@@ -99,6 +112,9 @@ fun DashboardRecentSection(
             }
         } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -106,6 +122,7 @@ fun DashboardRecentSection(
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.20f)
+<<<<<<< HEAD
                 )
             ) {
                 Column(
@@ -135,6 +152,30 @@ fun DashboardRecentSection(
                     onClick = { onTransactionClick(transaction) }
                 )
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                ) {
+                    transactions.take(5).forEachIndexed { index, transaction ->
+                        RecentTransactionCard(
+                            transaction = transaction,
+                            onClick = { onTransactionClick(transaction) }
+                        )
+
+                        if (index < transactions.take(5).lastIndex) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 14.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.18f),
+                                thickness = 0.8.dp
+                            )
+                        }
+                    }
+                }
+>>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             }
         }
     }
