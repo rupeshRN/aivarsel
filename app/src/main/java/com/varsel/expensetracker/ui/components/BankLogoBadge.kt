@@ -33,6 +33,9 @@ fun BankLogoBadge(
 
     when {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
         // Indian Bank (Official Deep Blue + Golden/Yellow emblem)
         normalized.contains("INDIAN BANK") || normalized.contains("IDIB") || normalized.contains("IND BL") -> {
             Surface(
@@ -68,8 +71,11 @@ fun BankLogoBadge(
         }
 
         // HDFC Bank (Official Navy Blue + Red & White emblem)
+<<<<<<< HEAD
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
         normalized.contains("HDFC") -> {
             Surface(
                 modifier = modifier.size(size),
@@ -83,22 +89,31 @@ fun BankLogoBadge(
                     Box(
                         modifier = Modifier
 <<<<<<< HEAD
+<<<<<<< HEAD
                             .size(size * 0.72f)
                             .border(1.5.dp, Color(0xFFED1C24), RoundedCornerShape(3.dp)),
 =======
                             .size(size * 0.75f)
                             .border(1.5.dp, Color(0xFFED1C24), RoundedCornerShape(4.dp)),
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                            .size(size * 0.72f)
+                            .border(1.5.dp, Color(0xFFED1C24), RoundedCornerShape(3.dp)),
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "HDFC",
                             color = Color.White,
 <<<<<<< HEAD
+<<<<<<< HEAD
                             fontSize = (size.value * 0.20f).sp,
 =======
                             fontSize = (size.value * 0.22f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                            fontSize = (size.value * 0.20f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                             fontWeight = FontWeight.Black,
                             fontFamily = FontFamily.SansSerif
                         )
@@ -106,6 +121,7 @@ fun BankLogoBadge(
                 }
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
         // SBI (State Bank of India - Official Keyhole Blue circle)
@@ -121,11 +137,21 @@ fun BankLogoBadge(
                 shape = CircleShape,
                 color = Color(0xFF1E5BB5)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // SBI (State Bank of India - Official Keyhole Blue circle)
+        normalized.contains("SBI") || normalized.contains("STATE BANK") || normalized.contains("SBIN") -> {
+            Surface(
+                modifier = modifier.size(size),
+                shape = CircleShape,
+                color = Color(0xFF0066B3)
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
+<<<<<<< HEAD
 <<<<<<< HEAD
                     // SBI iconic circular keyhole emblem
                     Box(
@@ -137,6 +163,12 @@ fun BankLogoBadge(
                         modifier = Modifier
                             .size(size * 0.5f)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                    // SBI iconic circular keyhole emblem
+                    Box(
+                        modifier = Modifier
+                            .size(size * 0.52f)
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                             .clip(CircleShape)
                             .background(Color.White),
                         contentAlignment = Alignment.BottomCenter
@@ -144,22 +176,32 @@ fun BankLogoBadge(
                         Box(
                             modifier = Modifier
 <<<<<<< HEAD
+<<<<<<< HEAD
                                 .size(size * 0.18f, size * 0.28f)
                                 .background(Color(0xFF0066B3))
 =======
                                 .size(size * 0.22f, size * 0.28f)
                                 .background(Color(0xFF1E5BB5))
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                                .size(size * 0.18f, size * 0.28f)
+                                .background(Color(0xFF0066B3))
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         )
                     }
                 }
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         // ICICI Bank (Official Maroon & Orange Arc)
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // ICICI Bank (Official Maroon & Orange Arc)
+>>>>>>> f04611b (feat: add support for additional Indian banks)
         normalized.contains("ICICI") -> {
             Surface(
                 modifier = modifier.size(size),
@@ -173,10 +215,14 @@ fun BankLogoBadge(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
 <<<<<<< HEAD
+<<<<<<< HEAD
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
 =======
                         horizontalArrangement = Arrangement.spacedBy(1.dp)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                     ) {
                         Box(
                             modifier = Modifier
@@ -188,10 +234,14 @@ fun BankLogoBadge(
                             text = "i",
                             color = Color.White,
 <<<<<<< HEAD
+<<<<<<< HEAD
                             fontSize = (size.value * 0.44f).sp,
 =======
                             fontSize = (size.value * 0.45f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                            fontSize = (size.value * 0.44f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                             fontWeight = FontWeight.Bold,
                             fontFamily = FontFamily.Serif
                         )
@@ -200,12 +250,18 @@ fun BankLogoBadge(
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         // Axis Bank (Official Burgundy + Inverted A-pyramid)
         normalized.contains("AXIS") || normalized.contains("UTIB") -> {
 =======
         normalized.contains("AXIS") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // Axis Bank (Official Burgundy + Inverted A-pyramid)
+        normalized.contains("AXIS") || normalized.contains("UTIB") -> {
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -218,17 +274,23 @@ fun BankLogoBadge(
                     Text(
                         text = "▲",
 <<<<<<< HEAD
+<<<<<<< HEAD
                         color = Color.White,
                         fontSize = (size.value * 0.38f).sp,
 =======
                         color = Color(0xFFED1C24),
                         fontSize = (size.value * 0.35f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        color = Color.White,
+                        fontSize = (size.value * 0.38f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Black
                     )
                 }
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
         // Kotak Mahindra Bank (Official Red + Infinity symbol)
@@ -244,6 +306,15 @@ fun BankLogoBadge(
                 shape = RoundedCornerShape(8.dp),
                 color = Color(0xFFEE1C25)
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // Kotak Mahindra Bank (Official Red + Infinity symbol)
+        normalized.contains("KOTAK") || normalized.contains("KKBK") -> {
+            Surface(
+                modifier = modifier.size(size),
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFED1C24)
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -253,15 +324,20 @@ fun BankLogoBadge(
                         text = "∞",
                         color = Color.White,
 <<<<<<< HEAD
+<<<<<<< HEAD
                         fontSize = (size.value * 0.50f).sp,
 =======
                         fontSize = (size.value * 0.48f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        fontSize = (size.value * 0.50f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
         // Bank of Baroda (Baroda Vermillion Sun)
@@ -269,6 +345,11 @@ fun BankLogoBadge(
 =======
         normalized.contains("BARODA") || normalized.contains("BOB") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // Bank of Baroda (Baroda Vermillion Sun)
+        normalized.contains("BARODA") || normalized.contains("BOB") || normalized.contains("BARB") -> {
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -282,15 +363,20 @@ fun BankLogoBadge(
                         text = "BOB",
                         color = Color.White,
 <<<<<<< HEAD
+<<<<<<< HEAD
                         fontSize = (size.value * 0.24f).sp,
 =======
                         fontSize = (size.value * 0.25f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        fontSize = (size.value * 0.24f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Black
                     )
                 }
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
         // Canara Bank (Official Blue + Yellow interlocking triangles)
@@ -298,6 +384,11 @@ fun BankLogoBadge(
 =======
         normalized.contains("CANARA") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // Canara Bank (Official Blue + Yellow interlocking triangles)
+        normalized.contains("CANARA") || normalized.contains("CNRB") -> {
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -311,15 +402,20 @@ fun BankLogoBadge(
                         text = "▲",
                         color = Color(0xFFFFD200),
 <<<<<<< HEAD
+<<<<<<< HEAD
                         fontSize = (size.value * 0.38f).sp,
 =======
                         fontSize = (size.value * 0.35f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        fontSize = (size.value * 0.38f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Black
                     )
                 }
             }
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
         // Punjab National Bank (PNB Maroon & Gold)
@@ -327,6 +423,11 @@ fun BankLogoBadge(
 =======
         normalized.contains("PNB") || normalized.contains("PUNJAB") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+
+        // Punjab National Bank (PNB Maroon & Gold)
+        normalized.contains("PNB") || normalized.contains("PUNJAB") || normalized.contains("PUNB") -> {
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -346,6 +447,9 @@ fun BankLogoBadge(
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 
         // Union Bank of India (Union Red & Blue)
         normalized.contains("UNION") || normalized.contains("UBIN") -> {
@@ -369,8 +473,11 @@ fun BankLogoBadge(
         }
 
         // IDFC FIRST Bank (Official FIRST Maroon)
+<<<<<<< HEAD
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
         normalized.contains("IDFC") -> {
             Surface(
                 modifier = modifier.size(size),
@@ -385,16 +492,23 @@ fun BankLogoBadge(
                         text = "IDFC",
                         color = Color.White,
 <<<<<<< HEAD
+<<<<<<< HEAD
                         fontSize = (size.value * 0.23f).sp,
 =======
                         fontSize = (size.value * 0.24f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        fontSize = (size.value * 0.23f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 
         // Indian Overseas Bank (IOB Blue & Gold)
         normalized.contains("IOB") || normalized.contains("IOBA") || normalized.contains("OVERSEAS") -> {
@@ -419,9 +533,12 @@ fun BankLogoBadge(
 
         // Federal Bank (Federal Blue & Yellow)
         normalized.contains("FEDERAL") || normalized.contains("FDRL") -> {
+<<<<<<< HEAD
 =======
         normalized.contains("FEDERAL") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -441,6 +558,9 @@ fun BankLogoBadge(
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 
         // IndusInd Bank (Indus Crimson)
         normalized.contains("INDUSIND") || normalized.contains("INDB") -> {
@@ -465,9 +585,12 @@ fun BankLogoBadge(
 
         // Paytm Payments Bank
         normalized.contains("PAYTM") || normalized.contains("PYTM") -> {
+<<<<<<< HEAD
 =======
         normalized.contains("PAYTM") -> {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -481,16 +604,23 @@ fun BankLogoBadge(
                         text = "paytm",
                         color = Color(0xFF00BAF2),
 <<<<<<< HEAD
+<<<<<<< HEAD
                         fontSize = (size.value * 0.20f).sp,
 =======
                         fontSize = (size.value * 0.22f).sp,
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        fontSize = (size.value * 0.20f).sp,
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         fontWeight = FontWeight.Black
                     )
                 }
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 
         // Airtel Payments Bank
         normalized.contains("AIRTEL") -> {
@@ -535,8 +665,11 @@ fun BankLogoBadge(
         }
 
         // Fallback Bank Badge
+<<<<<<< HEAD
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
         else -> {
             Surface(
                 modifier = modifier.size(size),

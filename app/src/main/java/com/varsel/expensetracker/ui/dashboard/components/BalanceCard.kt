@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+<<<<<<< HEAD
 =======
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,9 +27,13 @@ import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 <<<<<<< HEAD
+<<<<<<< HEAD
 import androidx.compose.material.icons.outlined.CreditCard
 =======
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+import androidx.compose.material.icons.outlined.CreditCard
+>>>>>>> f04611b (feat: add support for additional Indian banks)
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
@@ -162,7 +169,7 @@ fun BalanceCard(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Total Balance Header + Eye Toggle
+                // Header with Privacy Eye Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -177,7 +184,7 @@ fun BalanceCard(
 
                     IconButton(
                         onClick = { isBalanceHidden = !isBalanceHidden },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
                             imageVector = if (isBalanceHidden) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
@@ -261,6 +268,7 @@ fun BalanceCard(
 
         //--------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
         // Account-wise Section (Slide Carousel for multiple)
         //--------------------------------------------------
         if (summary.accounts.isNotEmpty()) {
@@ -271,6 +279,13 @@ fun BalanceCard(
         //--------------------------------------------------
         if (summary.accounts.isNotEmpty()) {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+        // Account-wise Section (Slide Carousel for multiple)
+        //--------------------------------------------------
+        if (summary.accounts.isNotEmpty()) {
+            val listState = rememberLazyListState()
+
+>>>>>>> f04611b (feat: add support for additional Indian banks)
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -281,6 +296,9 @@ fun BalanceCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -306,6 +324,7 @@ fun BalanceCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
+<<<<<<< HEAD
                 }
 
                 // If single account: full width card. If multiple: horizontal slide cards
@@ -368,27 +387,23 @@ fun BalanceCard(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+=======
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                 }
 
-                // If 1 or 2 accounts, show 2-column or stacked cards; if more, use scrollable row
-                if (summary.accounts.size <= 2) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        summary.accounts.forEach { account ->
-                            BankAccountCard(
-                                account = account,
-                                isBalanceHidden = isBalanceHidden,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
+                // If single account: full width card. If multiple: horizontal slide cards
+                if (summary.accounts.size == 1) {
+                    BankAccountCard(
+                        account = summary.accounts.first(),
+                        isBalanceHidden = isBalanceHidden,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        contentPadding = PaddingValues(horizontal = 2.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+<<<<<<< HEAD
                         items(summary.accounts) { account ->
                             BankAccountCard(
                                 account = account,
@@ -396,6 +411,49 @@ fun BalanceCard(
                                 modifier = Modifier.width(220.dp)
                             )
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                        LazyRow(
+                            state = listState,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(horizontal = 2.dp)
+                        ) {
+                            items(summary.accounts) { account ->
+                                BankAccountCard(
+                                    account = account,
+                                    isBalanceHidden = isBalanceHidden,
+                                    modifier = Modifier.width(260.dp)
+                                )
+                            }
+                        }
+
+                        // Slide Indicator Dots
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 2.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            summary.accounts.forEachIndexed { index, _ ->
+                                val isSelected = derivedStateOf {
+                                    listState.firstVisibleItemIndex == index
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .padding(horizontal = 3.dp)
+                                        .height(4.dp)
+                                        .width(if (isSelected.value) 16.dp else 6.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isSelected.value) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                            }
+                                        )
+                                )
+                            }
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                         }
                     }
                 }
@@ -562,10 +620,14 @@ private fun BankAccountCard(
                 BankLogoBadge(
                     bankName = account.bankName,
 <<<<<<< HEAD
+<<<<<<< HEAD
                     size = 34.dp
 =======
                     size = 32.dp
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+                    size = 34.dp
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                 )
 
                 Column(modifier = Modifier.weight(1f)) {
@@ -585,12 +647,18 @@ private fun BankAccountCard(
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
 =======
             Column {
 >>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
+=======
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+>>>>>>> f04611b (feat: add support for additional Indian banks)
                 Text(
                     text = "Available Balance",
                     style = MaterialTheme.typography.labelSmall,
