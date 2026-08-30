@@ -49,14 +49,16 @@ class FinancialEventViewModel @Inject constructor(
         observeJob = viewModelScope.launch {
             combine(
                 transactionRepository.getAllTransactions(),
-                financialEventAllocationRepository.observeAllAllocations()
-            ) { transactions, allocations ->
-                Pair(transactions, allocations)
-            }.collectLatest { (transactions, allocations) ->
+                financialEventAllocationRepository.observeAllAllocations(),
+                categoryDao.getAllCategories()
+            ) { transactions, allocations, dbCategories ->
+                Triple(transactions, allocations, dbCategories)
+            }.collectLatest { (transactions, allocations, dbCategories) ->
                 rebuildState(
                     transactionLinkId = transactionLinkId,
                     transactions = transactions,
-                    allocations = allocations
+                    allocations = allocations,
+                    dbCategories = dbCategories.map { it.name }
                 )
             }
         }
@@ -65,7 +67,8 @@ class FinancialEventViewModel @Inject constructor(
     private suspend fun rebuildState(
         transactionLinkId: String,
         transactions: List<Transaction>,
-        allocations: List<FinancialEventAllocationEntity>
+        allocations: List<FinancialEventAllocationEntity>,
+        dbCategories: List<String> = emptyList()
     ) {
         val group = transactionLinkGroupRepository.getGroup(transactionLinkId)
         if (group == null) {
@@ -148,8 +151,11 @@ class FinancialEventViewModel @Inject constructor(
         availableExpenses.sortByDescending { it.transaction.dateTimestamp }
         availableReimbursements.sortByDescending { it.transaction.dateTimestamp }
 
-        val categories = CategoryMetadata.all
+        val staticCategories = CategoryMetadata.all
             .map { it.id }
+            .filter { it.isNotBlank() }
+
+        val categories = (dbCategories + staticCategories)
             .filter { it.isNotBlank() }
             .distinct()
 

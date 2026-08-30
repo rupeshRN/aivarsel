@@ -8,16 +8,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.lifecycleScope
+import com.varsel.expensetracker.category.CategoryIconCatalog
+import com.varsel.expensetracker.data.local.dao.CategoryDao
 import com.varsel.expensetracker.ui.navigation.AppDestination
 import com.varsel.expensetracker.ui.navigation.AppShell
 import com.varsel.expensetracker.ui.navigation.NavGraph
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var categoryDao: CategoryDao
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            categoryDao.getAllCategories().collect { categories ->
+                CategoryIconCatalog.updateCategories(categories)
+            }
+        }
 
         enableEdgeToEdge()
 
