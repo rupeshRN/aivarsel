@@ -27,7 +27,11 @@ fun BottomActionBar(
     onDeleteClick: () -> Unit,
     onSaveClick: () -> Unit,
     saveEnabled: Boolean = true,
+<<<<<<< HEAD
     isImported: Boolean = false
+=======
+    deleteEnabled: Boolean = true
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -35,6 +39,7 @@ fun BottomActionBar(
     ) {
         OutlinedButton(
             modifier = Modifier.weight(1f),
+<<<<<<< HEAD
             shape = RoundedCornerShape(14.dp),
             onClick = onDeleteClick,
             colors = ButtonDefaults.outlinedButtonColors(
@@ -65,15 +70,35 @@ fun BottomActionBar(
         Button(
             modifier = Modifier.weight(1.3f),
             shape = RoundedCornerShape(14.dp),
+=======
+            enabled = deleteEnabled,
+            onClick = onDeleteClick
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Delete,
+                contentDescription = null
+            )
+            Text(if (deleteEnabled) "Delete" else "Locked")
+        }
+
+        Button(
+            modifier = Modifier.weight(1f),
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
             enabled = saveEnabled,
             onClick = onSaveClick
         ) {
             Icon(
+<<<<<<< HEAD
                 imageVector = Icons.Outlined.Check,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
+=======
+                imageVector = Icons.Outlined.Save,
+                contentDescription = null
+            )
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
             Text("Save Changes")
         }
     }

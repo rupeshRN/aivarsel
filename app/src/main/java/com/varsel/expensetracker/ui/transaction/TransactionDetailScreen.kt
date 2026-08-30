@@ -21,7 +21,10 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
+<<<<<<< HEAD
 import androidx.compose.material.icons.outlined.Lock
+=======
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -45,7 +48,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+<<<<<<< HEAD
 import androidx.compose.ui.graphics.Color
+=======
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -78,7 +84,10 @@ fun TransactionDetailScreen(
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+<<<<<<< HEAD
     var showImportedLockedInfoDialog by remember { mutableStateOf(false) }
+=======
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
 
     //--------------------------------------------------
     // Load transaction
@@ -121,9 +130,13 @@ fun TransactionDetailScreen(
                 val isImported = state.transaction.isImported
                 BottomActionBar(
                     onDeleteClick = {
+<<<<<<< HEAD
                         if (isImported) {
                             showImportedLockedInfoDialog = true
                         } else {
+=======
+                        if (!isImported) {
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                             showDeleteConfirmDialog = true
                         }
                     },
@@ -131,7 +144,11 @@ fun TransactionDetailScreen(
                         showSaveConfirmDialog = true
                     },
                     saveEnabled = state.hasChanges && !state.isSaving,
+<<<<<<< HEAD
                     isImported = isImported
+=======
+                    deleteEnabled = !isImported
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                 )
             }
         }
@@ -141,7 +158,11 @@ fun TransactionDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(scrollState)
+<<<<<<< HEAD
                 .padding(20.dp),
+=======
+                .padding(24.dp),
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             when (val state = uiState) {
@@ -153,6 +174,7 @@ fun TransactionDetailScreen(
                 }
                 is TransactionDetailUiState.Loaded -> {
                     val transaction = state.transaction
+<<<<<<< HEAD
                     val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
 
                     // Hero Transaction Header Card
@@ -207,6 +229,31 @@ fun TransactionDetailScreen(
                                         )
                                     }
                                 }
+=======
+
+                    if (transaction.isImported) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Imported bank transaction • Deletion is locked to preserve statement integrity.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                             }
                         }
                     }
@@ -215,6 +262,7 @@ fun TransactionDetailScreen(
                     DescriptionSection(
                         description = state.editableDescription,
                         onDescriptionChanged = viewModel::updateDescription
+<<<<<<< HEAD
                     )
 
                     // Category
@@ -229,6 +277,22 @@ fun TransactionDetailScreen(
                         }
                     )
 
+=======
+                    )
+
+                    // Category
+                    CategorySection(
+                        selectedCategory = state.selectedCategory,
+                        transactionType = transaction.type,
+                        availableCategories = state.categories,
+                        onCategorySelected = viewModel::updateCategory,
+                        onNewCategoryClick = {
+                            newCategoryName = ""
+                            showAddCategoryDialog = true
+                        }
+                    )
+
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                     // Transaction Role
                     TransactionRoleSection(
                         transactionType = transaction.type,
@@ -293,7 +357,13 @@ fun TransactionDetailScreen(
 
                     // Transaction Information
                     TransactionInfoSection(
+<<<<<<< HEAD
                         transaction = transaction
+=======
+                        amount = "₹%.2f".format(transaction.amount),
+                        date = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(Date(transaction.dateTimestamp)),
+                        type = transaction.type.name
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                     )
 
                     Spacer(modifier = Modifier.padding(bottom = 24.dp))
@@ -503,6 +573,7 @@ fun TransactionDetailScreen(
             }
         )
     }
+<<<<<<< HEAD
 
     //--------------------------------------------------
     // Imported Bank Transaction Deletion Locked Dialog
@@ -539,3 +610,7 @@ fun TransactionDetailScreen(
 }
 
 
+=======
+}
+
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)

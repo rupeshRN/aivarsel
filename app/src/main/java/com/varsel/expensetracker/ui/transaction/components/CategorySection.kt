@@ -61,6 +61,7 @@ fun CategorySection(
             CategoryUi(id = it.id, isIncome = isIncome)
         }
 
+<<<<<<< HEAD
         val combined = (dynamicCategoryUis + staticCategories).distinctBy { it.id.lowercase() }.toMutableList()
 
         if (selectedCategory.isNotBlank() && combined.none { it.id.equals(selectedCategory, ignoreCase = true) }) {
@@ -74,6 +75,21 @@ fun CategorySection(
     }
     val selectedColor = remember(selectedCategory) {
         CategoryPalette.colorFor(selectedCategory)
+=======
+    val displayCategories = remember(transactionType, availableCategories, selectedCategory) {
+        val staticCategories = CategoryMetadata.categoriesFor(transactionType)
+        val dynamicCategoryUis = availableCategories.map { name ->
+            val emoji = CategoryMetadata.emojiForCategory(name, isIncome)
+            CategoryUi(id = name, icon = emoji, isIncome = isIncome)
+        }
+
+        val combined = (staticCategories + dynamicCategoryUis).distinctBy { it.id.lowercase() }.toMutableList()
+
+        if (selectedCategory.isNotBlank() && combined.none { it.id.equals(selectedCategory, ignoreCase = true) }) {
+            combined.add(CategoryUi(selectedCategory, CategoryMetadata.emojiForCategory(selectedCategory, isIncome), isIncome = isIncome))
+        }
+        combined
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
     }
 
     Column(
@@ -185,6 +201,7 @@ fun CategorySection(
                     }
                 }
 
+<<<<<<< HEAD
                 // Add Category Pill
                 Surface(
                     modifier = Modifier
@@ -213,7 +230,29 @@ fun CategorySection(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
+=======
+                repeat(3 - row.size) {
+                    NewCategoryCard(
+                        modifier = Modifier.weight(1f),
+                        onClick = onNewCategoryClick
+                    )
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                 }
+            }
+        }
+
+        // If categories evenly divide by 3, provide a dedicated row with NewCategoryCard
+        if (displayCategories.size % 3 == 0) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                NewCategoryCard(
+                    modifier = Modifier.weight(1f),
+                    onClick = onNewCategoryClick
+                )
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
             }
         }
     }

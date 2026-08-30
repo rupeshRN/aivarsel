@@ -116,6 +116,7 @@ class TransactionDetailViewModel @Inject constructor(
                 financialEventAllocationRepository.observeAllAllocations(),
                 categoryDao.getAllCategories()
             ) { allTransactions, allGroups, allAllocations, dbCategories ->
+<<<<<<< HEAD
                 val currentTx = allTransactions.firstOrNull { it.id == transactionId }
                 val isIncome = currentTx?.let { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT } ?: false
                 val staticCategoryNames = CategoryMetadata.categoriesFor(isIncome).map { it.id }
@@ -123,6 +124,9 @@ class TransactionDetailViewModel @Inject constructor(
                     .filter { it.type == "BOTH" || (isIncome && it.type == "INCOME") || (!isIncome && it.type == "EXPENSE") }
                     .map { it.name }
                 val categoryNames = (filteredDbCategories + staticCategoryNames).distinct()
+=======
+                val categoryNames = (dbCategories.map { it.name } + loadCategories()).distinct()
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                 Quad(allTransactions, allGroups, allAllocations, categoryNames)
             }.collectLatest { (allTransactions, allGroups, allAllocations, categoryNames) ->
                 updateTransactionDetailState(
@@ -664,13 +668,21 @@ class TransactionDetailViewModel @Inject constructor(
     fun createCategory(name: String, isIncome: Boolean) {
         if (name.isBlank()) return
         viewModelScope.launch {
+<<<<<<< HEAD
             val iconKey = com.varsel.expensetracker.category.CategoryIconCatalog.iconKeyForCategory(name, isIncome)
+=======
+            val emoji = CategoryMetadata.emojiForCategory(name, isIncome)
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
             val typeStr = if (isIncome) "INCOME" else "EXPENSE"
             val newCategory = com.varsel.expensetracker.data.local.entity.CategoryEntity(
                 name = name.trim(),
                 type = typeStr,
                 colorHex = if (isIncome) "#4CAF50" else "#2196F3",
+<<<<<<< HEAD
                 iconName = iconKey,
+=======
+                iconName = emoji,
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                 budgetLimit = 0.0,
                 keywords = name.trim().uppercase()
             )

@@ -122,7 +122,25 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("bescom", Category.UTILITIES, 95),
         KeywordRule("power", Category.UTILITIES, 95),
 
+<<<<<<< HEAD
         // Healthcare & Fitness
+=======
+        // Mobile
+        KeywordRule("recharge", Category.MOBILE, 100),
+        KeywordRule("airtel", Category.UTILITIES, 95),
+        KeywordRule("jio", Category.UTILITIES, 95),
+
+        // Utilities
+        KeywordRule("electricity", Category.UTILITIES, 95),
+        KeywordRule("water", Category.UTILITIES, 95),
+        KeywordRule("gas", Category.UTILITIES, 95),
+        KeywordRule("eb", Category.UTILITIES, 95),
+        KeywordRule("tneb", Category.UTILITIES, 95),
+        KeywordRule("bescom", Category.UTILITIES, 95),
+        KeywordRule("power", Category.UTILITIES, 95),
+
+        // Healthcare
+>>>>>>> e822426 (feat: enhance category metadata and transaction logic)
         KeywordRule("medical", Category.HEALTHCARE, 95),
         KeywordRule("hospital", Category.HEALTHCARE, 100),
         KeywordRule("pharmacy", Category.HEALTHCARE, 100),
