@@ -60,11 +60,11 @@ class IciciBankParser @Inject constructor(
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
         if (lines.isEmpty()) return emptyList()
 
-        // 1. Filter out pre-table headers and post-table footers
+        // 1. Filter out pre-table headers and page-break artifacts across all pages
         val cleanLines = extractTransactionTableLines(lines)
         if (cleanLines.isEmpty()) return emptyList()
 
-        // 2. Group lines into transaction blocks
+        // 2. Group lines into transaction blocks across all pages till end
         val blocks = groupIntoTransactionBlocks(cleanLines)
 
         // 3. Parse each block into a Transaction object
@@ -108,9 +108,17 @@ class IciciBankParser @Inject constructor(
                 continue
             }
 
-            // Detect table footer / end of statement markers
+            // Detect genuine final statement footer markers
             if (isStatementFooter(upper)) {
-                break
+                // Do not break early on multi-page intermediate footers unless it's the final closing notice
+                if (upper.contains("LEGENDS FOR TRANSACTIONS") ||
+                    upper.contains("SINCERELY, TEAM ICICI BANK") ||
+                    upper.contains("THIS IS A SYSTEM GENERATED STATEMENT")
+                ) {
+                    // Reached the document end
+                    break
+                }
+                continue
             }
 
             // Skip repeated page header lines in multi-page statements
@@ -118,8 +126,14 @@ class IciciBankParser @Inject constructor(
                 upper.contains("WITHDRAWAL AMOUNT") ||
                 upper.contains("DEPOSIT AMOUNT") ||
                 upper.contains("STATEMENT OF TRANSACTIONS") ||
+                upper.contains("STATEMENT OF TRANSACTIONS IN SAVING") ||
+                upper.contains("STATEMENT OF TRANSACTIONS IN CURRENT") ||
                 upper.contains("YOUR BASE BRANCH") ||
-                upper.matches(Regex("""PAGE\s+\d+\s+OF\s+\d+"""))
+                upper.contains("ICICI BANK LIMITED") ||
+                upper.contains("S NO.") ||
+                upper.contains("CHEQUE NUMBER") ||
+                upper.matches(Regex("""PAGE\s+\d+\s+OF\s+\d+""")) ||
+                upper.matches(Regex("""\d+\s+OF\s+\d+"""))
             ) {
                 continue
             }
@@ -137,10 +151,7 @@ class IciciBankParser @Inject constructor(
                 upperLine.contains("THIS IS A SYSTEM GENERATED STATEMENT") ||
                 upperLine.contains("NEVER SHARE YOUR OTP") ||
                 upperLine.contains("WWW.ICICI.BANK.IN") ||
-                upperLine.contains("DIAL YOUR BANK") ||
-                upperLine.contains("CLOSING BALANCE") ||
-                upperLine.contains("TOTAL CREDITS") ||
-                upperLine.contains("TOTAL DEBITS")
+                upperLine.contains("DIAL YOUR BANK")
     }
 
     private fun groupIntoTransactionBlocks(lines: List<String>): List<List<String>> {
@@ -294,12 +305,22 @@ class IciciBankParser @Inject constructor(
             val segment2 = impsMatch.groupValues.getOrNull(3)?.trim() ?: ""
             val segment3 = impsMatch.groupValues.getOrNull(4)?.trim() ?: ""
 
-            // In ICICI: segment1 is often note ("For ticket", "gym", "cc emi"), segment2 is beneficiary name, segment3 is IFSC
-            if (segment2.isNotBlank() && !segment2.startsWith("IDIB", ignoreCase = true) && !segment2.startsWith("HDFC", ignoreCase = true) && !segment2.startsWith("ICIC", ignoreCase = true) && !segment2.startsWith("SBIN", ignoreCase = true)) {
-                mainPartyName = formatCleanName(segment2)
-                if (segment1.isNotBlank()) subPurpose = formatCleanName(segment1)
-            } else if (segment1.isNotBlank()) {
-                mainPartyName = formatCleanName(segment1)
+            // In ICICI statements:
+            // segment1 = user note or remark ("Room rent eb bi", "For ticket", "B gym", "cc emi")
+            // segment2 = beneficiary name ("Rupesh Kum", "Krishnan", "Trainer")
+            // segment3 = IFSC code ("BINB001234", "IDIB0001234")
+            //
+            // The user explicitly does NOT want the top bold redundant name in the cleaned description.
+            // Priority:
+            // 1. If segment1 is a valid note/purpose, use segment1 as the primary description (e.g. "Room Rent Eb Bi", "For Ticket", "Gym", "CC EMI").
+            // 2. If segment1 is empty or generic, use segment2.
+            val cleanSegment1 = formatCleanName(segment1)
+            val cleanSegment2 = formatCleanName(segment2)
+
+            if (cleanSegment1.isNotBlank()) {
+                mainPartyName = cleanSegment1
+            } else if (cleanSegment2.isNotBlank()) {
+                mainPartyName = cleanSegment2
             }
         }
 
@@ -362,12 +383,13 @@ class IciciBankParser @Inject constructor(
     }
 
     private fun formatCleanName(raw: String): String {
+        val uppercaseAcronyms = setOf("EMI", "UPI", "IMPS", "NEFT", "RTGS", "ATM", "POS", "INR", "IFSC")
         return raw.replace(Regex("""[/\\_]+"""), " ")
             .replace(Regex("""\s+"""), " ")
             .trim()
             .split(" ")
             .joinToString(" ") { word ->
-                if (word.length <= 3 && word.all { it.isLetter() }) {
+                if (uppercaseAcronyms.contains(word.uppercase())) {
                     word.uppercase()
                 } else {
                     word.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }

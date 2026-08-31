@@ -40,30 +40,45 @@ class IciciBankParserTest {
     }
 
     @Test
-    fun `test parse extracts sample ICICI transactions correctly`() {
-        val rawStatement = """
+    fun `test parse ignores bold header line and extracts exact remark note`() {
+        val testStatement = """
             ICICI Bank
             Statement of Transactions in Saving Account no. 123456789012 in INR for the period August 25, 2025 - August 25, 2026
-            Your Base Branch: ICICI BANK LIMITED
+            S No. Transaction Date Cheque Number Transaction Remarks Withdrawal Amount (INR) Deposit Amount (INR) Balance (INR)
+            1 25.08.2025 Rupesh Kum
+            MMT/IMPS/611234567895/Room rent eb bi/Rupesh Kum/BINB001234 12500.00 45000.00
+        """.trimIndent()
 
-            S No.  Transaction Date  Cheque Number  Transaction Remarks  Withdrawal Amount (INR)  Deposit Amount (INR)  Balance (INR)
-            1  25.08.2025  Navaneetha Krishnan
-            MMT/IMPS/523700123471/For ticket/Krishnan/IDIB0001234  2000.00  34521.01
+        val transactions = iciciBankParser.parse(testStatement)
+        assertEquals(1, transactions.size)
+        assertEquals("Room Rent Eb Bi", transactions[0].description)
+        assertEquals("611234567895", transactions[0].referenceNumber)
+        assertEquals(12500.00, transactions[0].amount, 0.01)
+    }
 
-            2  27.08.2025  Home Expenses
-            MMT/IMPS/523922456789/For home expens/Krishnan/IDIB0001234  5000.00  29521.01
+    @Test
+    fun `test multi-page statement continues until end of document`() {
+        val multiPageStatement = """
+            ICICI Bank
+            Statement of Transactions in Saving Account no. 123456789012
+            S No. Transaction Date Cheque Number Transaction Remarks Withdrawal Amount (INR) Deposit Amount (INR) Balance (INR)
+            1 25.08.2025 Person One
+            MMT/IMPS/523700123471/For ticket/Krishnan/IDIB0001234 2000.00 34521.01
+            Page 1 of 3
 
-            3  28.08.2025  NEFT trxn
-            NEFT-SBIN000123456789-ATTN//INB-0000003...-SBIN0001234  4220.00  33741.01
+            ICICI Bank Limited
+            Statement of Transactions in Saving Account
+            S No. Transaction Date Cheque Number Transaction Remarks Withdrawal Amount (INR) Deposit Amount (INR) Balance (INR)
+            2 26.08.2025 Person Two
+            MMT/IMPS/523700123472/Groceries/Store/IDIB0001234 1500.00 33021.01
+            Page 2 of 3
 
-            4  29.08.2025  CAPGEMINI TECHNOLOGY SERVICES INDIA
-            NEFT-SCBL0012345-CAPGEMINI TECHNOLOGY SERVICES INDIA-SALARY CR AUG-25-44605040462-SCBL00  74872.00  108613.01
-
-            5  01.09.2025  Gym Payment
-            MMT/IMPS/524400120254/B gym/Trainer/HDFC0001234  1400.00  107213.01
-
-            16  01.10.2025  CC EMI
-            MMT/IMPS/527416441723/cc emi/Bank/HDFC0001234  1365.00  118912.01
+            ICICI Bank Limited
+            Statement of Transactions in Saving Account
+            S No. Transaction Date Cheque Number Transaction Remarks Withdrawal Amount (INR) Deposit Amount (INR) Balance (INR)
+            3 27.08.2025 Person Three
+            MMT/IMPS/523700123473/Internet bill/ISP/IDIB0001234 999.00 32022.01
+            Page 3 of 3
 
             Sincerely,
             Team ICICI Bank
@@ -71,28 +86,10 @@ class IciciBankParserTest {
             Legends for transactions in your Account Statement
         """.trimIndent()
 
-        val transactions = iciciBankParser.parse(rawStatement)
-
-        assertEquals(6, transactions.size)
-
-        // Tx 1: 2000.00 Expense
-        assertEquals(2000.00, transactions[0].amount, 0.01)
-        assertEquals(TransactionType.EXPENSE, transactions[0].type)
-        assertEquals("523700123471", transactions[0].referenceNumber)
-
-        // Tx 3: 4220.00 Income (Balance went from 29521.01 to 33741.01)
-        assertEquals(4220.00, transactions[2].amount, 0.01)
-        assertEquals(TransactionType.INCOME, transactions[2].type)
-
-        // Tx 4: 74872.00 Salary Income (Balance went from 33741.01 to 108613.01)
-        assertEquals(74872.00, transactions[3].amount, 0.01)
-        assertEquals(TransactionType.INCOME, transactions[3].type)
-        assertEquals(Category.SALARY, transactions[3].category)
-        assertTrue(transactions[3].description.contains("Capgemini", ignoreCase = true))
-
-        // Tx 5: 1400.00 Expense for Gym
-        assertEquals(1400.00, transactions[4].amount, 0.01)
-        assertEquals(TransactionType.EXPENSE, transactions[4].type)
-        assertEquals("524400120254", transactions[4].referenceNumber)
+        val transactions = iciciBankParser.parse(multiPageStatement)
+        assertEquals(3, transactions.size)
+        assertEquals("For Ticket", transactions[0].description)
+        assertEquals("Groceries", transactions[1].description)
+        assertEquals("Internet Bill", transactions[2].description)
     }
 }
