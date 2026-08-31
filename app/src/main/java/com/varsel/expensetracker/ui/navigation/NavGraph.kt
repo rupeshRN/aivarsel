@@ -272,6 +272,12 @@ composable(AppDestination.Reports.route) {
             ImportScreen(
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onNavigateToTransactions = {
+                    navController.navigate(AppDestination.Transactions.route) {
+                        popUpTo(AppDestination.Home.route)
+                        launchSingleTop = true
+                    }
                 }
             )
         }

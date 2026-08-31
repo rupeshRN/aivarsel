@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,6 +67,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -124,6 +126,12 @@ fun FinancialEventScreen(
         viewModel.loadFinancialEvent(transactionLinkId)
     }
 
+    LaunchedEffect(uiState) {
+        if (uiState is FinancialEventUiState.EventDeleted) {
+            onBackClick()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -156,6 +164,10 @@ fun FinancialEventScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             when (val state = uiState) {
+                FinancialEventUiState.EventDeleted -> {
+                    // Handled by LaunchedEffect navigation
+                }
+
                 FinancialEventUiState.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -267,9 +279,10 @@ fun FinancialEventScreen(
                             "Reimbursements (${state.allocatedReimbursements.size})"
                         )
 
-                        SecondaryTabRow(
+                        ScrollableTabRow(
                             selectedTabIndex = selectedTab,
-                            modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                            edgePadding = 0.dp,
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)),
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ) {
                             tabTitles.forEachIndexed { index, title ->
@@ -280,7 +293,9 @@ fun FinancialEventScreen(
                                         Text(
                                             text = title,
                                             fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                            fontSize = 13.sp
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            softWrap = false
                                         )
                                     }
                                 )
@@ -1513,9 +1528,10 @@ private fun EditItemAmountDialog(
                         OutlinedButton(
                             onClick = { amountText = "%.2f".format(target) },
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 4.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) {
-                            Text(label, fontSize = 11.sp)
+                            Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
                         }
                     }
                 }

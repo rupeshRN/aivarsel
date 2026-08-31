@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -593,9 +594,10 @@ private fun CreateReportGroupDialog(
                             onClick = { amountText = "%.2f".format(target) },
                             enabled = !isSaving,
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 4.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) {
-                            Text(label, fontSize = 11.sp)
+                            Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
                         }
                     }
                 }
@@ -793,9 +795,10 @@ private fun AllocateExistingGroupDialog(
                             onClick = { amountText = "%.2f".format(target) },
                             enabled = !isSaving,
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 4.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) {
-                            Text(label, fontSize = 11.sp)
+                            Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
                         }
                     }
                 }
@@ -945,9 +948,10 @@ private fun EditAllocationAmountDialog(
                         OutlinedButton(
                             onClick = { amountText = "%.2f".format(target) },
                             shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 4.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) {
-                            Text(label, fontSize = 11.sp)
+                            Text(label, fontSize = 11.sp, maxLines = 1, softWrap = false)
                         }
                     }
                 }

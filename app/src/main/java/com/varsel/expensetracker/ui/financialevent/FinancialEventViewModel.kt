@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
@@ -72,7 +73,7 @@ class FinancialEventViewModel @Inject constructor(
     ) {
         val group = transactionLinkGroupRepository.getGroup(transactionLinkId)
         if (group == null) {
-            _uiState.value = FinancialEventUiState.Error("Financial event not found.")
+            _uiState.value = FinancialEventUiState.EventDeleted
             return
         }
 
@@ -300,6 +301,14 @@ class FinancialEventViewModel @Inject constructor(
             val tx = transactionRepository.getTransactionById(transactionId)
             if (tx?.transactionLinkId == linkId) {
                 transactionRepository.unlinkTransaction(transactionId)
+            }
+
+            // Check if any allocations or linked transactions remain for this event
+            val remainingAllocations = financialEventAllocationRepository.getAllocationsForFinancialEvent(linkId)
+            val remainingLinkedTxs = transactionRepository.getAllTransactions().first().filter { it.transactionLinkId == linkId }
+            if (remainingAllocations.isEmpty() && remainingLinkedTxs.isEmpty()) {
+                transactionLinkGroupRepository.deleteGroup(linkId)
+                _uiState.value = FinancialEventUiState.EventDeleted
             }
         }
     }

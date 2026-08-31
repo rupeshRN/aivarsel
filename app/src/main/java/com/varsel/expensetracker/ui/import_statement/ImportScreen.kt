@@ -92,6 +92,7 @@ import com.varsel.expensetracker.ui.import_statement.components.TransactionRevie
 @Composable
 fun ImportScreen(
     onBackClick: () -> Unit,
+    onNavigateToTransactions: () -> Unit = onBackClick,
     viewModel: ImportViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -243,7 +244,7 @@ fun ImportScreen(
                         onDone = {
                             showTransactionReview = false
                             viewModel.resetState()
-                            onBackClick()
+                            onNavigateToTransactions()
                         },
                         onImportAnother = {
                             showTransactionReview = false

@@ -77,9 +77,7 @@ fun CategorySection(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Collapsible Header - Standardized title without extraneous leading icon
