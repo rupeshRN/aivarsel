@@ -16,10 +16,10 @@ class IciciBankParserTest {
 
     @Before
     fun setup() {
-        val customRuleEngine = CustomRuleEngine()
+        val descriptionNormalizer = DescriptionNormalizer()
+        val customRuleEngine = CustomRuleEngine(descriptionNormalizer)
         val categoryRuleEngine = CategoryRuleEngine(customRuleEngine)
         val descriptionCleaner = DescriptionCleaner()
-        val descriptionNormalizer = DescriptionNormalizer()
 
         iciciBankParser = IciciBankParser(
             categoryRuleEngine = categoryRuleEngine,

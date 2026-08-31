@@ -38,8 +38,8 @@ class IciciBankParser @Inject constructor(
         RegexOption.MULTILINE
     )
 
-    // Regex to match monetary amounts with 2 decimal places
-    private val amountRegex = Regex("""(?:\b|INR\s*|Rs\.?\s*)([0-9]{1,3}(?:,[0-9]{3})*|\d+)\.(\d{2})""")
+    // Regex to match monetary amounts with 2 decimal places (ensuring not part of a date or version)
+    private val amountRegex = Regex("""(?<![.\d])([0-9]{1,3}(?:,[0-9]{3})*|\d+)\.(\d{2})(?![.\d])""")
 
     override fun canParse(rawText: String): Boolean {
         val text = rawText.uppercase()
@@ -181,9 +181,10 @@ class IciciBankParser @Inject constructor(
         val dateTimestamp = parseDate(rawDateStr) ?: return null
 
         val fullBlockText = blockLines.joinToString("\n")
+        val textWithoutDates = fullBlockText.replace(Regex("""\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b"""), " ")
 
         // 1. Extract Amounts and Running Balance
-        val amountsFound = amountRegex.findAll(fullBlockText).mapNotNull { match ->
+        val amountsFound = amountRegex.findAll(textWithoutDates).mapNotNull { match ->
             val numStr = (match.groupValues[1] + "." + match.groupValues[2]).replace(",", "")
             numStr.toDoubleOrNull()
         }.toList()
