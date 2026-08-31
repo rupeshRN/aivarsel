@@ -1,5 +1,6 @@
 package com.varsel.expensetracker.ui.import_statement.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -55,9 +56,10 @@ fun StatementUploadHeroCard(
             .testTag("statement_upload_hero_card"),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
@@ -99,7 +101,7 @@ fun StatementUploadHeroCard(
 
             // Subtitle
             Text(
-                text = "Choose your PDF statement or image scan to parse transactions, detect transfers, and reconcile closing balances automatically.",
+                text = "Choose your PDF statement to parse transactions, detect transfers, and reconcile closing balances automatically.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -116,26 +118,29 @@ fun StatementUploadHeroCard(
             ) {
                 FormatBadge(
                     icon = Icons.Default.Description,
-                    label = "PDF e-Statement"
+                    label = "PDF e-Statement",
+                    enabled = true
                 )
                 FormatBadge(
                     icon = Icons.Default.Image,
-                    label = "Passbook / Photo"
+                    label = "Passbook / Photo (Soon)",
+                    enabled = false
                 )
                 FormatBadge(
                     icon = Icons.Default.ReceiptLong,
-                    label = "UPI / Bank Report"
+                    label = "UPI / Bank Report",
+                    enabled = true
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Main CTA Button
+            // Main CTA Button - with slight horizontal margin so it doesn't touch borders
             Button(
                 onClick = onSelectFileClick,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 52.dp)
+                    .fillMaxWidth(0.94f)
+                    .heightIn(min = 50.dp)
                     .testTag("select_statement_button"),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -187,11 +192,16 @@ fun StatementUploadHeroCard(
 @Composable
 private fun FormatBadge(
     icon: ImageVector,
-    label: String
+    label: String,
+    enabled: Boolean = true
 ) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        color = if (enabled) {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+        },
         modifier = Modifier.height(28.dp)
     ) {
         Row(
@@ -202,13 +212,21 @@ private fun FormatBadge(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(13.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = if (enabled) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                }
             )
             Spacer(modifier = Modifier.width(5.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                }
             )
         }
     }

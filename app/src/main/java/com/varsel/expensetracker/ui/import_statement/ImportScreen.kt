@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -164,22 +165,6 @@ fun ImportScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
-                    }
-                },
-                actions = {
-                    if (uiState is ImportUiState.Idle) {
-                        IconButton(
-                            onClick = {
-                                launcher.launch(arrayOf("application/pdf", "image/*"))
-                            },
-                            modifier = Modifier.testTag("top_bar_upload_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CloudUpload,
-                                contentDescription = "Select File",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -846,10 +831,10 @@ private fun TransactionReviewContent(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            items(
+            itemsIndexed(
                 items = filteredTransactions,
-                key = { "${it.transaction.id}_${it.transaction.dateTimestamp}_${it.transaction.amount}" }
-            ) { selectable ->
+                key = { index, item -> "${index}_${item.transaction.id}_${item.transaction.dateTimestamp}_${item.transaction.amount}" }
+            ) { _, selectable ->
                 TransactionReviewRow(
                     selectable = selectable,
                     onCheckedChange = { selectable.selected = it }
