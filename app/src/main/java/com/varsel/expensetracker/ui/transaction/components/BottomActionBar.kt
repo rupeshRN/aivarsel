@@ -27,15 +27,7 @@ fun BottomActionBar(
     onDeleteClick: () -> Unit,
     onSaveClick: () -> Unit,
     saveEnabled: Boolean = true,
-<<<<<<< HEAD
-<<<<<<< HEAD
     isImported: Boolean = false
-=======
-    deleteEnabled: Boolean = true
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-    isImported: Boolean = false
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -43,10 +35,6 @@ fun BottomActionBar(
     ) {
         OutlinedButton(
             modifier = Modifier.weight(1f),
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             shape = RoundedCornerShape(14.dp),
             onClick = onDeleteClick,
             colors = ButtonDefaults.outlinedButtonColors(
@@ -64,7 +52,6 @@ fun BottomActionBar(
                     MaterialTheme.colorScheme.error.copy(alpha = 0.4f)
                 }
             )
-<<<<<<< HEAD
         ) {
             Icon(
                 imageVector = if (isImported) Icons.Outlined.Lock else Icons.Outlined.Delete,
@@ -78,52 +65,15 @@ fun BottomActionBar(
         Button(
             modifier = Modifier.weight(1.3f),
             shape = RoundedCornerShape(14.dp),
-=======
-            enabled = deleteEnabled,
-            onClick = onDeleteClick
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-        ) {
-            Icon(
-                imageVector = if (isImported) Icons.Outlined.Lock else Icons.Outlined.Delete,
-                contentDescription = if (isImported) "Locked" else "Delete",
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(if (isImported) "Locked" else "Delete")
-        }
-
-        Button(
-<<<<<<< HEAD
-            modifier = Modifier.weight(1f),
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-            modifier = Modifier.weight(1.3f),
-            shape = RoundedCornerShape(14.dp),
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             enabled = saveEnabled,
             onClick = onSaveClick
         ) {
             Icon(
-<<<<<<< HEAD
-<<<<<<< HEAD
                 imageVector = Icons.Outlined.Check,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-=======
-                imageVector = Icons.Outlined.Save,
-                contentDescription = null
-            )
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                imageVector = Icons.Outlined.Check,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             Text("Save Changes")
         }
     }

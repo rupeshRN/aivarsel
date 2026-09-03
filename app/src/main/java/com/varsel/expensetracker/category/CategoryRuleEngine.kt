@@ -87,49 +87,6 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("starbucks", Category.FOOD, 98, isIncome = false),
         KeywordRule("mcdonald", Category.FOOD, 98, isIncome = false),
 
-<<<<<<< HEAD
-        // Fuel & Transport
-        KeywordRule("train", Category.FUEL_AND_TRANSPORT, 98),
-        KeywordRule("ticket", Category.FUEL_AND_TRANSPORT, 90),
-        KeywordRule("metro", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("bus", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("cab", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("railway", Category.FUEL_AND_TRANSPORT, 98),
-        KeywordRule("railways", Category.FUEL_AND_TRANSPORT, 98),
-        KeywordRule("flight", Category.FUEL_AND_TRANSPORT, 98),
-        KeywordRule("airport", Category.FUEL_AND_TRANSPORT, 98),
-        KeywordRule("taxi", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("auto", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("ola", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("uber", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("rapido", Category.FUEL_AND_TRANSPORT, 95),
-        KeywordRule("petrol", Category.FUEL_AND_TRANSPORT, 100),
-        KeywordRule("diesel", Category.FUEL_AND_TRANSPORT, 100),
-        KeywordRule("fuel", Category.FUEL_AND_TRANSPORT, 100),
-<<<<<<< HEAD
-
-        // Utilities
-        KeywordRule("recharge", Category.UTILITIES, 100),
-        KeywordRule("airtel", Category.UTILITIES, 95),
-        KeywordRule("jio", Category.UTILITIES, 95),
-        KeywordRule("electricity", Category.UTILITIES, 95),
-        KeywordRule("water", Category.UTILITIES, 95),
-        KeywordRule("gas", Category.UTILITIES, 95),
-        KeywordRule("eb", Category.UTILITIES, 95),
-        KeywordRule("tneb", Category.UTILITIES, 95),
-        KeywordRule("bescom", Category.UTILITIES, 95),
-        KeywordRule("power", Category.UTILITIES, 95),
-
-<<<<<<< HEAD
-        // Healthcare & Fitness
-=======
-        // Mobile
-        KeywordRule("recharge", Category.MOBILE, 100),
-        KeywordRule("airtel", Category.UTILITIES, 95),
-        KeywordRule("jio", Category.UTILITIES, 95),
-=======
->>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
-=======
         // Groceries (Expense)
         KeywordRule("grocery", Category.GROCERIES, 95, isIncome = false),
         KeywordRule("vegetable", Category.GROCERIES, 90, isIncome = false),
@@ -148,7 +105,6 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("zepto", Category.GROCERIES, 98, isIncome = false),
         KeywordRule("blinkit", Category.GROCERIES, 98, isIncome = false),
         KeywordRule("instamart", Category.GROCERIES, 98, isIncome = false),
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
         // Fuel & Transport (Expense)
         KeywordRule("train", Category.FUEL_AND_TRANSPORT, 98, isIncome = false),
@@ -169,39 +125,6 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("diesel", Category.FUEL_AND_TRANSPORT, 100, isIncome = false),
         KeywordRule("fuel", Category.FUEL_AND_TRANSPORT, 100, isIncome = false),
 
-<<<<<<< HEAD
-        // Healthcare
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-        KeywordRule("medical", Category.HEALTHCARE, 95),
-        KeywordRule("hospital", Category.HEALTHCARE, 100),
-        KeywordRule("pharmacy", Category.HEALTHCARE, 100),
-        KeywordRule("medicine", Category.HEALTHCARE, 100),
-        KeywordRule("medicines", Category.HEALTHCARE, 100),
-        KeywordRule("clinic", Category.HEALTHCARE, 100),
-        KeywordRule("doctor", Category.HEALTHCARE, 100),
-        KeywordRule("tablet", Category.HEALTHCARE, 95),
-        KeywordRule("tablets", Category.HEALTHCARE, 95),
-        KeywordRule("gym", Category.PERSONAL_CARE, 95),
-        KeywordRule("fitness", Category.PERSONAL_CARE, 95),
-        KeywordRule("workout", Category.PERSONAL_CARE, 95),
-
-        // Income & Salary
-        KeywordRule("salary", Category.SALARY, 100),
-        KeywordRule("payroll", Category.SALARY, 100),
-        KeywordRule("stipend", Category.SALARY, 95),
-        KeywordRule("interest", Category.INVESTMENTS, 90),
-        KeywordRule("dividend", Category.INVESTMENTS, 95),
-        KeywordRule("cashback", Category.REFUNDS, 95),
-        KeywordRule("refund", Category.REFUNDS, 95),
-
-        // Shopping
-        KeywordRule("amazon", Category.SHOPPING, 95),
-        KeywordRule("flipkart", Category.SHOPPING, 95),
-        KeywordRule("myntra", Category.SHOPPING, 95),
-        KeywordRule("ajio", Category.SHOPPING, 95),
-        KeywordRule("zudio", Category.SHOPPING, 95),
-        KeywordRule("decathlon", Category.SHOPPING, 95)
-=======
         // Utilities (Expense)
         KeywordRule("recharge", Category.UTILITIES, 100, isIncome = false),
         KeywordRule("airtel", Category.UTILITIES, 95, isIncome = false),
@@ -250,7 +173,6 @@ class CategoryRuleEngine @Inject constructor(
         KeywordRule("ajio", Category.SHOPPING, 95, isIncome = false),
         KeywordRule("zudio", Category.SHOPPING, 95, isIncome = false),
         KeywordRule("decathlon", Category.SHOPPING, 95, isIncome = false)
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     )
 
     /**

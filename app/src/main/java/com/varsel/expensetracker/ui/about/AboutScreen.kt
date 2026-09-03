@@ -27,13 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-<<<<<<< HEAD
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-=======
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -42,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.varsel.expensetracker.R
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
 private const val GITHUB_REPO_URL = "https://github.com/jeobida/varsel"
 
@@ -205,20 +197,6 @@ private fun AppIdentityHero() {
         ) {
             // App Icon Graphic
             Surface(
-<<<<<<< HEAD
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(72.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Outlined.AccountBalanceWallet,
-                        contentDescription = "Varsel Logo",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-=======
                 shape = RoundedCornerShape(22.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                 border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
@@ -233,7 +211,6 @@ private fun AppIdentityHero() {
                         .fillMaxSize()
                         .clip(RoundedCornerShape(22.dp))
                 )
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             }
 
             Spacer(modifier = Modifier.height(14.dp))

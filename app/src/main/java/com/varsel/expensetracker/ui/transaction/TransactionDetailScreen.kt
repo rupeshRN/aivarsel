@@ -30,14 +30,7 @@ import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
-<<<<<<< HEAD
-<<<<<<< HEAD
 import androidx.compose.material.icons.outlined.Lock
-=======
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-import androidx.compose.material.icons.outlined.Lock
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -68,14 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-<<<<<<< HEAD
-<<<<<<< HEAD
 import androidx.compose.ui.graphics.Color
-=======
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-import androidx.compose.ui.graphics.Color
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -109,14 +95,7 @@ fun TransactionDetailScreen(
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-<<<<<<< HEAD
-<<<<<<< HEAD
     var showImportedLockedInfoDialog by remember { mutableStateOf(false) }
-=======
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-    var showImportedLockedInfoDialog by remember { mutableStateOf(false) }
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
 
     //--------------------------------------------------
     // Load transaction
@@ -159,19 +138,9 @@ fun TransactionDetailScreen(
                 val isImported = state.transaction.isImported
                 BottomActionBar(
                     onDeleteClick = {
-<<<<<<< HEAD
-<<<<<<< HEAD
                         if (isImported) {
                             showImportedLockedInfoDialog = true
                         } else {
-=======
-                        if (!isImported) {
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                        if (isImported) {
-                            showImportedLockedInfoDialog = true
-                        } else {
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                             showDeleteConfirmDialog = true
                         }
                     },
@@ -182,15 +151,7 @@ fun TransactionDetailScreen(
                         showSaveConfirmDialog = true
                     },
                     saveEnabled = state.hasChanges && !state.isSaving,
-<<<<<<< HEAD
-<<<<<<< HEAD
                     isImported = isImported
-=======
-                    deleteEnabled = !isImported
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                    isImported = isImported
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                 )
             }
         }
@@ -200,15 +161,7 @@ fun TransactionDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(scrollState)
-<<<<<<< HEAD
-<<<<<<< HEAD
                 .padding(20.dp),
-=======
-                .padding(24.dp),
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                .padding(20.dp),
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             when (val state = uiState) {
@@ -220,8 +173,6 @@ fun TransactionDetailScreen(
                 }
                 is TransactionDetailUiState.Loaded -> {
                     val transaction = state.transaction
-<<<<<<< HEAD
-<<<<<<< HEAD
                     val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
                     val isTransfer = state.selectedRole == TransactionRole.TRANSFER_IN || state.selectedRole == TransactionRole.TRANSFER_OUT
 
@@ -286,78 +237,6 @@ fun TransactionDetailScreen(
                                         )
                                     }
                                 }
-=======
-=======
-                    val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-
-                    // Hero Transaction Header Card
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(24.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = (if (isIncome) "+ ₹" else "- ₹") + "%,.2f".format(kotlin.math.abs(transaction.amount)),
-                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                                color = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)
-                            )
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-<<<<<<< HEAD
-                                Icon(
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Imported bank transaction • Deletion is locked to preserve statement integrity.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = (if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)).copy(alpha = 0.12f)
-                                ) {
-                                    Text(
-                                        text = transaction.type.name,
-                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828),
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-
-                                if (transaction.isImported) {
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                                    ) {
-                                        Text(
-                                            text = "Bank Statement",
-                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                        )
-                                    }
-                                }
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                             }
                         }
                     }
@@ -366,7 +245,6 @@ fun TransactionDetailScreen(
                     DescriptionSection(
                         description = state.editableDescription,
                         onDescriptionChanged = viewModel::updateDescription
-<<<<<<< HEAD
                     )
 
                     // Category
@@ -381,22 +259,6 @@ fun TransactionDetailScreen(
                         }
                     )
 
-=======
-                    )
-
-                    // Category
-                    CategorySection(
-                        selectedCategory = state.selectedCategory,
-                        transactionType = transaction.type,
-                        availableCategories = state.categories,
-                        onCategorySelected = viewModel::updateCategory,
-                        onNewCategoryClick = {
-                            newCategoryName = ""
-                            showAddCategoryDialog = true
-                        }
-                    )
-
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
                     // Transaction Role
                     TransactionRoleSection(
                         transactionType = transaction.type,
@@ -461,17 +323,7 @@ fun TransactionDetailScreen(
 
                     // Transaction Information
                     TransactionInfoSection(
-<<<<<<< HEAD
-<<<<<<< HEAD
                         transaction = transaction
-=======
-                        amount = "₹%.2f".format(transaction.amount),
-                        date = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(Date(transaction.dateTimestamp)),
-                        type = transaction.type.name
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
-                        transaction = transaction
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                     )
 
                     Spacer(modifier = Modifier.padding(bottom = 24.dp))
@@ -901,10 +753,6 @@ fun TransactionDetailScreen(
             }
         )
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
 
     //--------------------------------------------------
     // Imported Bank Transaction Deletion Locked Dialog
@@ -941,10 +789,3 @@ fun TransactionDetailScreen(
 }
 
 
-<<<<<<< HEAD
-=======
-}
-
->>>>>>> e822426 (feat: enhance category metadata and transaction logic)
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)

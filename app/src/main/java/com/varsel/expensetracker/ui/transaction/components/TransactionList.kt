@@ -40,15 +40,10 @@ fun LazyListScope.transactionList(
             TransactionEmptyState()
         }
     } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         items(
             items = transactions,
             key = { it.id }
         ) { item ->
-<<<<<<< HEAD
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -65,48 +60,6 @@ fun LazyListScope.transactionList(
                     transaction = item,
                     onClick = { onTransactionClick(item) }
                 )
-=======
-        item(key = "transactions_container") {
-=======
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
-                border = BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                )
-            ) {
-<<<<<<< HEAD
-                Column(
-                    modifier = Modifier.padding(vertical = 6.dp)
-                ) {
-                    transactions.forEachIndexed { index, item ->
-                        RecentTransactionCard(
-                            transaction = item,
-                            onClick = { onTransactionClick(item) }
-                        )
-
-                        if (index < transactions.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
-                                thickness = 1.dp
-                            )
-                        }
-                    }
-                }
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-=======
-                RecentTransactionCard(
-                    transaction = item,
-                    onClick = { onTransactionClick(item) }
-                )
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             }
         }
     }

@@ -73,24 +73,10 @@ private fun QuickActionButton(
             .clip(RoundedCornerShape(14.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-<<<<<<< HEAD
-<<<<<<< HEAD
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.20f)
-=======
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.20f)
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
         )
     ) {
         Column(

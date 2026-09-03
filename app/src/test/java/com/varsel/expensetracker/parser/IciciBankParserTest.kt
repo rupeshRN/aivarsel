@@ -91,8 +91,6 @@ class IciciBankParserTest {
         assertEquals("For Ticket", transactions[0].description)
         assertEquals("Groceries", transactions[1].description)
         assertEquals("Internet Bill", transactions[2].description)
-<<<<<<< HEAD
-=======
 
         val summary = iciciBankParser.extractSummary(multiPageStatement, transactions)
         org.junit.Assert.assertNotNull(summary)
@@ -117,6 +115,5 @@ class IciciBankParserTest {
         // Even if narration contains "@icici"
         val isIcici = iciciBankParser.canParse(indianBankText)
         org.junit.Assert.assertFalse(isIcici)
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     }
 }

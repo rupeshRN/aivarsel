@@ -6,10 +6,7 @@ import com.varsel.expensetracker.developer.ParserDiagnosticsCollector
 import com.varsel.expensetracker.domain.model.Transaction
 import com.varsel.expensetracker.domain.model.TransactionType
 import com.varsel.expensetracker.parser.BankDetector
-<<<<<<< HEAD
-=======
 import com.varsel.expensetracker.parser.HdfcBankParser
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 import com.varsel.expensetracker.parser.IciciBankParser
 import com.varsel.expensetracker.parser.IndianBankParser
 import com.varsel.expensetracker.parser.ReconciliationEngine
@@ -322,26 +319,10 @@ class StatementParserEngine @Inject constructor(
             if (tx.bankName.isNullOrBlank()) tx.copy(bankName = bankName) else tx
         }
 
-        val bankName = when (parser) {
-            is IciciBankParser -> "ICICI Bank"
-            is IndianBankParser -> "Indian Bank"
-            else -> "Bank Statement"
-        }
-
         //--------------------------------------------------
         // Final result returned to ImportViewModel.
         //--------------------------------------------------
 
-<<<<<<< HEAD
-return StatementImportResult(
-    summary = summary,
-    reconciliation = reconciliation,
-    transactions = transactions,
-    bankName = bankName,
-    accountId = accountIdentity?.accountId,
-    accountLast4 = accountIdentity?.accountLast4
-)
-=======
         return StatementImportResult(
             summary = resolvedSummary,
             reconciliation = reconciliation,
@@ -351,7 +332,6 @@ return StatementImportResult(
             accountLast4 = accountIdentity?.accountLast4,
             ifscCode = ifscCode
         )
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
     }
 

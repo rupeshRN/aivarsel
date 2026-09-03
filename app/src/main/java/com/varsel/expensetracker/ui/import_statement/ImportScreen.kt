@@ -275,13 +275,10 @@ fun ImportScreen(
                 //--------------------------------------------------
                 is ImportUiState.PasswordRequired -> {
                     PasswordRequiredContent(
-<<<<<<< HEAD
-=======
                         state = uiState as ImportUiState.PasswordRequired,
                         onSubmitPassword = { pwd ->
                             viewModel.submitPassword(pwd)
                         },
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                         onDismiss = {
                             viewModel.resetState()
                         }
@@ -637,14 +634,6 @@ private fun ErrorImportContent(
 
 @Composable
 private fun PasswordRequiredContent(
-<<<<<<< HEAD
-    onDismiss: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-=======
     state: ImportUiState.PasswordRequired,
     onSubmitPassword: (String) -> Unit,
     onDismiss: () -> Unit
@@ -656,35 +645,10 @@ private fun PasswordRequiredContent(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         contentAlignment = Alignment.Center
     ) {
         Card(
             shape = RoundedCornerShape(24.dp),
-<<<<<<< HEAD
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = "Password-Protected PDF",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Password protected documents are currently not supported for automated local parsing. Please export an unlocked statement copy and try again.",
-=======
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -725,20 +689,10 @@ private fun PasswordRequiredContent(
 
                 Text(
                     text = "Enter statement password to unlock and parse transactions.",
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
-<<<<<<< HEAD
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("OK")
-=======
 
                 if (state.isInvalidPasswordError) {
                     Spacer(modifier = Modifier.height(10.dp))
@@ -831,7 +785,6 @@ private fun PasswordRequiredContent(
                     ) {
                         Text("Unlock & Import")
                     }
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                 }
             }
         }

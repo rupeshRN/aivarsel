@@ -6,24 +6,14 @@ import javax.inject.Singleton
 @Singleton
 class BankDetector @Inject constructor(
     private val indianBankParser: IndianBankParser,
-<<<<<<< HEAD
-    private val iciciBankParser: IciciBankParser
-=======
     private val iciciBankParser: IciciBankParser,
     private val hdfcBankParser: HdfcBankParser
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 ) {
 
     fun detect(rawText: String): StatementParser {
         val upper = rawText.uppercase()
         val header = rawText.lines().take(30).joinToString("\n").uppercase()
 
-<<<<<<< HEAD
-        if (iciciBankParser.canParse(rawText)) {
-            return iciciBankParser
-        }
-
-=======
         // 1. Primary Header Branding Check
         val hasHdfcInHeader = header.contains("HDFC") ||
                 header.contains("HDFCBANK") ||
@@ -107,22 +97,12 @@ class BankDetector @Inject constructor(
         if (iciciBankParser.canParse(rawText)) {
             return iciciBankParser
         }
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         if (indianBankParser.canParse(rawText)) {
             return indianBankParser
         }
 
-<<<<<<< HEAD
-        throw IllegalArgumentException(
-            "Unsupported bank statement. Supported banks: Indian Bank, ICICI Bank."
-        )
-    }
-}
-
-=======
         return hdfcBankParser
     }
 }
 
 
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)

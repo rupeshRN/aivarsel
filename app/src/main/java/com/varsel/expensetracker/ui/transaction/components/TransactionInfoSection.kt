@@ -24,8 +24,6 @@ import java.util.Locale
 
 @Composable
 fun TransactionInfoSection(
-<<<<<<< HEAD
-<<<<<<< HEAD
     transaction: Transaction,
     modifier: Modifier = Modifier
 ) {
@@ -35,24 +33,6 @@ fun TransactionInfoSection(
     val reference = transaction.referenceNumber?.takeIf { it.isNotBlank() } ?: "Not available"
     val source = if (transaction.referenceNumber.isNullOrBlank()) "Manual Entry" else "Bank Statement Import"
 
-=======
-    amount: String,
-    date: String,
-    type: String,
-    modifier: Modifier = Modifier
-) {
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-=======
-    transaction: Transaction,
-    modifier: Modifier = Modifier
-) {
-    val dateFormat = SimpleDateFormat("dd MMMM yyyy, hh:mm a", Locale.ENGLISH)
-    val formattedDate = dateFormat.format(Date(transaction.dateTimestamp))
-
-    val reference = transaction.referenceNumber?.takeIf { it.isNotBlank() } ?: "Not available"
-    val source = if (transaction.referenceNumber.isNullOrBlank()) "Manual Entry" else "Bank Statement Import"
-
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -77,38 +57,6 @@ fun TransactionInfoSection(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-<<<<<<< HEAD
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                thickness = 1.dp
-            )
-
-            InfoRow(
-                title = "Date & Time",
-                value = formattedDate
-            )
-
-            InfoRow(
-                title = "Source",
-                value = source
-            )
-
-            InfoRow(
-                title = "Reference / UTR",
-                value = reference
-            )
-
-            InfoRow(
-                title = "Transaction ID",
-                value = "#TX-${transaction.id}"
-            )
-
-            InfoRow(
-                title = "Ledger Status",
-                value = "Settled & Verified"
-            )
-=======
 
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
@@ -152,7 +100,6 @@ fun TransactionInfoSection(
                 title = "Ledger Status",
                 value = "Settled & Verified"
             )
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
         }
     }
 }
@@ -183,11 +130,4 @@ private fun InfoRow(
     }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-=======
-
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)

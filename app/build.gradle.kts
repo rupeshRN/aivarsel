@@ -14,13 +14,8 @@ android {
         applicationId = "com.varsel.expensetracker"
         minSdk = 26
         targetSdk = 35
-<<<<<<< HEAD
-        versionCode = 3
-        versionName = "1.0.2"
-=======
         versionCode = 6
         versionName = "1.0.5"
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

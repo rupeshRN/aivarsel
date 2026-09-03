@@ -128,20 +128,12 @@ class CustomRuleEngine @Inject constructor(
         // 3. Word token matching (e.g., matching keywords inside long transaction descriptions)
         val tokens = lower.split(Regex("[^a-z0-9]+")).filter { it.length >= 2 }
         for (token in tokens) {
-<<<<<<< HEAD
-            cache[token]?.let { return it }
-=======
             cache[token]?.takeIf { isRecordCompatible(it, isIncome) }?.let { return it }
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         }
 
         val normTokens = normalized.split(Regex("[^a-z0-9]+")).filter { it.length >= 2 }
         for (token in normTokens) {
-<<<<<<< HEAD
-            cache[token]?.let { return it }
-=======
             cache[token]?.takeIf { isRecordCompatible(it, isIncome) }?.let { return it }
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         }
 
         // 4. Longest contains match

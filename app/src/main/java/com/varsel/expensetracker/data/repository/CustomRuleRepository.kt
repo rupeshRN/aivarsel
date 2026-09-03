@@ -35,12 +35,8 @@ class CustomRuleRepository @Inject constructor(
                     for (kw in keywordsList) {
                         val record = KnowledgeRecord(
                             displayDescription = "",
-<<<<<<< HEAD
-                            categoryName = category.name
-=======
                             categoryName = category.name,
                             targetType = category.type
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                         )
                         cache[kw] = record
                         val normalizedKw = descriptionNormalizer.normalize(kw)

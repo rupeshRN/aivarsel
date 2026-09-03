@@ -6,37 +6,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-<<<<<<< HEAD
-=======
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
->>>>>>> f04611b (feat: add support for additional Indian banks)
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
-<<<<<<< HEAD
-<<<<<<< HEAD
 import androidx.compose.material.icons.outlined.CreditCard
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-import androidx.compose.material.icons.outlined.CreditCard
->>>>>>> f04611b (feat: add support for additional Indian banks)
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
@@ -60,22 +41,13 @@ fun BalanceCard(
     modifier: Modifier = Modifier
 ) {
     var isBalanceHidden by remember { mutableStateOf(false) }
-<<<<<<< HEAD
-<<<<<<< HEAD
     val isDark = isSystemInDarkTheme()
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-    val isDark = isSystemInDarkTheme()
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
 
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         //--------------------------------------------------
-<<<<<<< HEAD
-<<<<<<< HEAD
         // Hero Balance Card with Rich Tonal Depth Gradient
         //--------------------------------------------------
         val heroGradient = Brush.linearGradient(
@@ -160,157 +132,14 @@ fun BalanceCard(
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             letterSpacing = (-1).sp
-=======
-        // Main Hero Balance Card
-=======
-        // Hero Balance Card with Rich Tonal Depth Gradient
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
-        //--------------------------------------------------
-        val heroGradient = Brush.linearGradient(
-            colors = if (isDark) {
-                listOf(
-                    MaterialTheme.colorScheme.primaryContainer,
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-                )
-            } else {
-                listOf(
-                    MaterialTheme.colorScheme.primaryContainer,
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f)
-                )
-            }
-        )
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(26.dp),
-            shadowElevation = if (isDark) 2.dp else 4.dp,
-            tonalElevation = 4.dp,
-            border = androidx.compose.foundation.BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = if (isDark) 0.25f else 0.18f)
-            )
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(heroGradient)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 22.dp, vertical = 22.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
-                ) {
-                    // Header with Privacy Eye Toggle
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-<<<<<<< HEAD
-                        Icon(
-                            imageVector = if (isBalanceHidden) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                            contentDescription = if (isBalanceHidden) "Show balance" else "Hide balance",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                            modifier = Modifier.size(18.dp)
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "Net Liquid Balance",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.5.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                            )
-                        }
-
-                        IconButton(
-                            onClick = { isBalanceHidden = !isBalanceHidden },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isBalanceHidden) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                                contentDescription = if (isBalanceHidden) "Show balance" else "Hide balance",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    // Dominant Hero Balance Amount Display
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Text(
-                            text = if (isBalanceHidden) "₹ ••••••••" else "₹%,.2f".format(summary.totalBalance),
-                            style = MaterialTheme.typography.displaySmall.copy(
-                                fontSize = 38.sp,
-                                lineHeight = 44.sp
-                            ),
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            letterSpacing = (-1).sp
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                         )
                     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
-                        thickness = 1.dp
-=======
-                // Balance Amount Display
-                Text(
-                    text = if (isBalanceHidden) "₹ ••••••••" else "₹%,.2f".format(summary.totalBalance),
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    letterSpacing = (-0.5).sp
-                )
-
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
-                    thickness = 1.dp
-                )
-
-                // Monthly Income and Expense Pills
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    IncomeExpensePill(
-                        modifier = Modifier.weight(1f),
-                        title = "Income",
-                        amount = summary.totalIncome,
-                        isIncome = true,
-                        isBalanceHidden = isBalanceHidden,
-                        changePercent = summary.incomeChangePercent
-                    )
-
-                    IncomeExpensePill(
-                        modifier = Modifier.weight(1f),
-                        title = "Expense",
-                        amount = summary.totalExpense,
-                        isIncome = false,
-                        isBalanceHidden = isBalanceHidden,
-                        changePercent = summary.expenseChangePercent
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-                    )
-
-=======
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
                         thickness = 1.dp
                     )
 
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                     // Monthly Income and Expense Pills with Strong Semantic Styling
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -339,25 +168,11 @@ fun BalanceCard(
         }
 
         //--------------------------------------------------
-<<<<<<< HEAD
-<<<<<<< HEAD
         // Account-wise Section (Slide Carousel for multiple)
         //--------------------------------------------------
         if (summary.accounts.isNotEmpty()) {
             val listState = rememberLazyListState()
 
-=======
-        // Account-wise Section with Bank Badges
-        //--------------------------------------------------
-        if (summary.accounts.isNotEmpty()) {
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-        // Account-wise Section (Slide Carousel for multiple)
-        //--------------------------------------------------
-        if (summary.accounts.isNotEmpty()) {
-            val listState = rememberLazyListState()
-
->>>>>>> f04611b (feat: add support for additional Indian banks)
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -367,10 +182,6 @@ fun BalanceCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f04611b (feat: add support for additional Indian banks)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -417,7 +228,6 @@ fun BalanceCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
-<<<<<<< HEAD
                 }
 
                 // If single account: full width card. If multiple: horizontal slide cards
@@ -473,80 +283,6 @@ fun BalanceCard(
                                         )
                                 )
                             }
-=======
-                    Text(
-                        text = "Bank Accounts (${summary.accounts.size})",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-=======
->>>>>>> f04611b (feat: add support for additional Indian banks)
-                }
-
-                // If single account: full width card. If multiple: horizontal slide cards
-                if (summary.accounts.size == 1) {
-                    BankAccountCard(
-                        account = summary.accounts.first(),
-                        isBalanceHidden = isBalanceHidden,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-<<<<<<< HEAD
-                        items(summary.accounts) { account ->
-                            BankAccountCard(
-                                account = account,
-                                isBalanceHidden = isBalanceHidden,
-                                modifier = Modifier.width(220.dp)
-                            )
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        LazyRow(
-                            state = listState,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(horizontal = 2.dp)
-                        ) {
-                            items(summary.accounts) { account ->
-                                BankAccountCard(
-                                    account = account,
-                                    isBalanceHidden = isBalanceHidden,
-                                    modifier = Modifier.width(260.dp)
-                                )
-                            }
-                        }
-
-                        // Slide Indicator Dots
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 2.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            summary.accounts.forEachIndexed { index, _ ->
-                                val isSelected = derivedStateOf {
-                                    listState.firstVisibleItemIndex == index
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .padding(horizontal = 3.dp)
-                                        .height(4.dp)
-                                        .width(if (isSelected.value) 16.dp else 6.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (isSelected.value) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else {
-                                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                            }
-                                        )
-                                )
-                            }
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         }
                     }
                 }
@@ -564,8 +300,6 @@ private fun IncomeExpensePill(
     isBalanceHidden: Boolean,
     changePercent: Double?
 ) {
-<<<<<<< HEAD
-<<<<<<< HEAD
     val isDark = isSystemInDarkTheme()
 
     // High Contrast Semantic Green & Red Palettes matching Transaction Detail
@@ -619,123 +353,21 @@ private fun IncomeExpensePill(
                     )
                 }
 
-=======
-=======
-    val isDark = isSystemInDarkTheme()
-
-    // High Contrast Semantic Green & Red Palettes
-    val primaryColor = if (isIncome) {
-        if (isDark) Color(0xFF81C784) else Color(0xFF1B5E20)
-    } else {
-        if (isDark) Color(0xFFFF8A80) else Color(0xFFB71C1C)
-    }
-
-    val pillBackground = if (isDark) {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.65f)
-    } else {
-        Color(0xFFFFFFFF).copy(alpha = 0.92f)
-    }
-
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = pillBackground,
-        shadowElevation = if (isDark) 0.dp else 1.dp,
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.30f)
-            else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.20f)
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-<<<<<<< HEAD
-                Icon(
-                    imageVector = if (isIncome) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
-                    contentDescription = null,
-                    tint = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828),
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Icon(
-                        imageVector = if (isIncome) Icons.Outlined.ArrowDownward else Icons.Outlined.ArrowUpward,
-                        contentDescription = null,
-                        tint = primaryColor,
-                        modifier = Modifier.size(15.dp)
-                    )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = primaryColor
-                    )
-                }
-
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                 changePercent?.let { pct ->
                     val arrow = if (pct > 0) "↑" else "↓"
                     Text(
                         text = "$arrow${abs(pct).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
                         fontWeight = FontWeight.ExtraBold,
                         color = primaryColor
-=======
-                        fontWeight = FontWeight.Bold,
-<<<<<<< HEAD
-                        color = if (isIncome) {
-                            if (pct >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
-                        } else {
-                            if (pct <= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
-                        }
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        color = primaryColor
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
                     )
                 }
             }
 
             Text(
                 text = if (isBalanceHidden) "₹ ••••" else "₹%,.2f".format(amount),
-<<<<<<< HEAD
-<<<<<<< HEAD
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                 color = primaryColor
-=======
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-<<<<<<< HEAD
-                color = MaterialTheme.colorScheme.onSurface
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-=======
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
->>>>>>> de06015 (ui: enhance visual contrast and category filtering)
-                color = primaryColor
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             )
         }
     }
@@ -750,24 +382,10 @@ private fun BankAccountCard(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-<<<<<<< HEAD
-<<<<<<< HEAD
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f),
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
             MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-=======
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.40f),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
         )
     ) {
         Column(
@@ -780,15 +398,7 @@ private fun BankAccountCard(
             ) {
                 BankLogoBadge(
                     bankName = account.bankName,
-<<<<<<< HEAD
-<<<<<<< HEAD
                     size = 34.dp
-=======
-                    size = 32.dp
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                    size = 34.dp
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 )
 
                 Column(modifier = Modifier.weight(1f)) {
@@ -814,19 +424,9 @@ private fun BankAccountCard(
                 }
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             Column(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-=======
-            Column {
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-            Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 Text(
                     text = "Available Balance",
                     style = MaterialTheme.typography.labelSmall,

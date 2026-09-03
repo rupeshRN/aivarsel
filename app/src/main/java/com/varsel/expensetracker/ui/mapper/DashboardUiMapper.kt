@@ -550,42 +550,12 @@ private fun calculateEffectiveExpense(
         val bankScores = mutableMapOf<String, Int>()
 
         for (t in transactions) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
             val ref = t.referenceNumber.orEmpty().uppercase()
             val desc = t.description.uppercase()
             val fp = t.transactionFingerprint.orEmpty().uppercase()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            when {
-                // Indian Bank (IFSC IDIB or Indian Bank text)
-                ref.contains("IDIB") || desc.contains("INDIAN BANK") || desc.contains("IND BL") || fp.contains("IDIB") -> return "Indian Bank"
-                ref.contains("SBIN") || desc.contains("STATE BANK OF INDIA") || desc.contains("SBI MAIN") -> return "SBI"
-                ref.contains("HDFC") || desc.contains("HDFC BANK") -> return "HDFC Bank"
-                ref.contains("ICIC") || desc.contains("ICICI BANK") -> return "ICICI Bank"
-                ref.contains("UTIB") || desc.contains("AXIS BANK") -> return "Axis Bank"
-                ref.contains("KKBK") || desc.contains("KOTAK MAHINDRA") -> return "Kotak Bank"
-                ref.contains("CNRB") || desc.contains("CANARA BANK") -> return "Canara Bank"
-                ref.contains("BARB") || desc.contains("BANK OF BARODA") -> return "Bank of Baroda"
-                ref.contains("PUNB") || desc.contains("PUNJAB NATIONAL") -> return "PNB"
-                ref.contains("IDFB") || desc.contains("IDFC FIRST") -> return "IDFC FIRST"
-                ref.contains("FDRL") || desc.contains("FEDERAL BANK") -> return "Federal Bank"
-                ref.contains("INDB") || desc.contains("INDUSIND BANK") -> return "IndusInd Bank"
-                ref.contains("UBIN") || desc.contains("UNION BANK") -> return "Union Bank"
-                ref.contains("IOBA") || desc.contains("INDIAN OVERSEAS") -> return "Indian Overseas Bank"
-                ref.contains("CBIN") || desc.contains("CENTRAL BANK") -> return "Central Bank"
-                ref.contains("BKID") || desc.contains("BANK OF INDIA") -> return "Bank of India"
-                ref.contains("YESB") || desc.contains("YES BANK") -> return "Yes Bank"
-                ref.contains("RATN") || desc.contains("RBL BANK") -> return "RBL Bank"
-                ref.contains("SCBL") || desc.contains("STANDARD CHARTERED") -> return "Standard Chartered"
-                ref.contains("CITI") || desc.contains("CITIBANK") -> return "Citi Bank"
-=======
             fun vote(name: String, weight: Int = 1) {
                 bankScores[name] = (bankScores[name] ?: 0) + weight
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             }
 
             // Indian Bank indicators
@@ -635,43 +605,6 @@ private fun calculateEffectiveExpense(
             // Citi Bank
             if (ref.contains("CITI") || desc.contains("CITIBANK") || fp.contains("CITI")) vote("Citi Bank", 3)
         }
-<<<<<<< HEAD
-        return "Indian Bank"
-=======
-            val combined = "${t.description} ${t.referenceNumber.orEmpty()} ${t.transactionFingerprint.orEmpty()}".uppercase()
-=======
->>>>>>> 5e062f3 (feat(ui): refine dashboard aesthetic and interactions)
-            when {
-                // Indian Bank (IFSC IDIB or Indian Bank text)
-                ref.contains("IDIB") || desc.contains("INDIAN BANK") || desc.contains("IND BL") || fp.contains("IDIB") -> return "Indian Bank"
-                ref.contains("SBIN") || desc.contains("STATE BANK OF INDIA") || desc.contains("SBI MAIN") -> return "SBI"
-                ref.contains("HDFC") || desc.contains("HDFC BANK") -> return "HDFC Bank"
-                ref.contains("ICIC") || desc.contains("ICICI BANK") -> return "ICICI Bank"
-                ref.contains("UTIB") || desc.contains("AXIS BANK") -> return "Axis Bank"
-                ref.contains("KKBK") || desc.contains("KOTAK MAHINDRA") -> return "Kotak Bank"
-                ref.contains("CNRB") || desc.contains("CANARA BANK") -> return "Canara Bank"
-                ref.contains("BARB") || desc.contains("BANK OF BARODA") -> return "Bank of Baroda"
-                ref.contains("PUNB") || desc.contains("PUNJAB NATIONAL") -> return "PNB"
-                ref.contains("IDFB") || desc.contains("IDFC FIRST") -> return "IDFC FIRST"
-                ref.contains("FDRL") || desc.contains("FEDERAL BANK") -> return "Federal Bank"
-                ref.contains("INDB") || desc.contains("INDUSIND BANK") -> return "IndusInd Bank"
-                ref.contains("UBIN") || desc.contains("UNION BANK") -> return "Union Bank"
-                ref.contains("IOBA") || desc.contains("INDIAN OVERSEAS") -> return "Indian Overseas Bank"
-                ref.contains("CBIN") || desc.contains("CENTRAL BANK") -> return "Central Bank"
-                ref.contains("BKID") || desc.contains("BANK OF INDIA") -> return "Bank of India"
-                ref.contains("YESB") || desc.contains("YES BANK") -> return "Yes Bank"
-                ref.contains("RATN") || desc.contains("RBL BANK") -> return "RBL Bank"
-                ref.contains("SCBL") || desc.contains("STANDARD CHARTERED") -> return "Standard Chartered"
-                ref.contains("CITI") || desc.contains("CITIBANK") -> return "Citi Bank"
-            }
-        }
-<<<<<<< HEAD
-        return "Bank Account"
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-        return "Indian Bank"
->>>>>>> f04611b (feat: add support for additional Indian banks)
-=======
 
         val topBank = bankScores.maxByOrNull { it.value }
         if (topBank != null && topBank.value > 0) {
@@ -679,7 +612,6 @@ private fun calculateEffectiveExpense(
         }
 
         return "Bank Account"
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     }
 
     private fun generateInsights(
@@ -704,27 +636,12 @@ private fun calculateEffectiveExpense(
             if (topCategory != null && topCategory.value > 0) {
                 val percentage = ((topCategory.value / currentMonthExpense) * 100).toInt()
                 val emoji = com.varsel.expensetracker.category.CategoryMetadata.emojiForCategory(topCategory.key, isIncome = false)
-<<<<<<< HEAD
-<<<<<<< HEAD
                 val formattedAmount = "₹%,.0f".format(topCategory.value)
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                val formattedAmount = "₹%,.0f".format(topCategory.value)
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 insights.add(
                     FinancialInsight(
                         emoji = emoji,
                         title = "${topCategory.key} is top expense",
-<<<<<<< HEAD
-<<<<<<< HEAD
                         description = "Accounts for $percentage% ($formattedAmount) of your spending this month.",
-=======
-                        description = "Accounts for $percentage% (₹%,.0f) of your spending this month.".format(topCategory.value),
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        description = "Accounts for $percentage% ($formattedAmount) of your spending this month.",
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         type = InsightType.NEUTRAL
                     )
                 )
@@ -734,57 +651,24 @@ private fun calculateEffectiveExpense(
         // 2. Month-over-Month Velocity
         if (expenseChangePercent != null && previousMonthExpense > 0) {
             val diff = abs(currentMonthExpense - previousMonthExpense)
-<<<<<<< HEAD
-<<<<<<< HEAD
             val formattedDiff = "₹%,.0f".format(diff)
             if (expenseChangePercent < 0) {
                 val pctVal = abs(expenseChangePercent.toInt())
-=======
-            if (expenseChangePercent < 0) {
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-            val formattedDiff = "₹%,.0f".format(diff)
-            if (expenseChangePercent < 0) {
-                val pctVal = abs(expenseChangePercent.toInt())
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 insights.add(
                     FinancialInsight(
                         emoji = "📉",
                         title = "Spending is down",
-<<<<<<< HEAD
-<<<<<<< HEAD
                         description = "You spent $formattedDiff less than this time last month (↓ $pctVal%).",
-=======
-                        description = "You spent ₹%,.0f less than this time last month (↓ %d%%).".format(diff, abs(expenseChangePercent.toInt())),
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        description = "You spent $formattedDiff less than this time last month (↓ $pctVal%).",
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         type = InsightType.POSITIVE
                     )
                 )
             } else if (expenseChangePercent > 10) {
-<<<<<<< HEAD
-<<<<<<< HEAD
                 val pctVal = expenseChangePercent.toInt()
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                val pctVal = expenseChangePercent.toInt()
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 insights.add(
                     FinancialInsight(
                         emoji = "📈",
                         title = "Spending has increased",
-<<<<<<< HEAD
-<<<<<<< HEAD
                         description = "You're spending $pctVal% ($formattedDiff) more compared to last month.",
-=======
-                        description = "You're spending %d%% (₹%,.0f) more compared to last month.".format(expenseChangePercent.toInt(), diff),
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        description = "You're spending $pctVal% ($formattedDiff) more compared to last month.",
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         type = InsightType.ATTENTION
                     )
                 )
@@ -795,53 +679,23 @@ private fun calculateEffectiveExpense(
         if (currentMonthIncome > 0) {
             val netSavings = currentMonthIncome - currentMonthExpense
             val savingsRate = ((netSavings / currentMonthIncome) * 100).toInt()
-<<<<<<< HEAD
-<<<<<<< HEAD
             val formattedSavings = "₹%,.0f".format(netSavings)
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-            val formattedSavings = "₹%,.0f".format(netSavings)
->>>>>>> f04611b (feat: add support for additional Indian banks)
             if (netSavings >= 0) {
                 insights.add(
                     FinancialInsight(
                         emoji = "💰",
                         title = "Net Savings: $savingsRate%",
-<<<<<<< HEAD
-<<<<<<< HEAD
                         description = "$formattedSavings net surplus saved from this month's income.",
-=======
-                        description = "₹%,.0f net surplus saved from this month's income.".format(netSavings),
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        description = "$formattedSavings net surplus saved from this month's income.",
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         type = InsightType.POSITIVE
                     )
                 )
             } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
                 val formattedDeficit = "₹%,.0f".format(abs(netSavings))
-=======
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                val formattedDeficit = "₹%,.0f".format(abs(netSavings))
->>>>>>> f04611b (feat: add support for additional Indian banks)
                 insights.add(
                     FinancialInsight(
                         emoji = "⚠️",
                         title = "Deficit this month",
-<<<<<<< HEAD
-<<<<<<< HEAD
                         description = "Expenses exceeded total income by $formattedDeficit this month.",
-=======
-                        description = "Expenses exceeded total income by ₹%,.0f this month.".format(abs(netSavings)),
->>>>>>> 7470ac9 (feat(dashboard): overhaul dashboard UI and navigation)
-=======
-                        description = "Expenses exceeded total income by $formattedDeficit this month.",
->>>>>>> f04611b (feat: add support for additional Indian banks)
                         type = InsightType.ATTENTION
                     )
                 )

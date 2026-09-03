@@ -29,45 +29,21 @@ class IciciBankParser @Inject constructor(
         SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH),
         SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
         SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH),
-<<<<<<< HEAD
-        SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
-=======
         SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH),
         SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
         SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH),
         SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     )
 
     // Regex for date at start of transaction line (with optional serial number)
     private val transactionDateRegex = Regex(
-<<<<<<< HEAD
-        """^\s*(?:(\d{1,4})\s+)?(\d{1,2}[./-]\d{1,2}[./-]\d{2,4})""",
-        RegexOption.MULTILINE
-=======
         """^\s*(?:(\d{1,4})[.)]?\s+)?(\d{1,2}[./-](?:\d{1,2}|[A-Za-z]{3})[./-]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]{3}\s+\d{4})""",
         RegexOption.IGNORE_CASE
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     )
 
     // Regex to match monetary amounts with 2 decimal places (ensuring not part of a date or version)
     private val amountRegex = Regex("""(?<![.\d])([0-9]{1,3}(?:,[0-9]{3})*|\d+)\.(\d{2})(?![.\d])""")
 
-<<<<<<< HEAD
-    override fun canParse(rawText: String): Boolean {
-        val text = rawText.uppercase()
-        return (text.contains("ICICI") && (
-            text.contains("STATEMENT") ||
-            text.contains("SAVING ACCOUNT") ||
-            text.contains("CURRENT ACCOUNT") ||
-            text.contains("TRANSACTION REMARKS") ||
-            text.contains("LEGENDS FOR TRANSACTIONS") ||
-            text.contains("ICICI.BANK.IN")
-        )) || (
-            text.contains("TRANSACTION REMARKS") &&
-            (text.contains("WITHDRAWAL AMOUNT") || text.contains("DEPOSIT AMOUNT"))
-        )
-=======
     private var lastParsedRows: List<Pair<Transaction, Double?>> = emptyList()
 
     override fun canParse(rawText: String): Boolean {
@@ -94,18 +70,10 @@ class IciciBankParser @Inject constructor(
         val hasNumericDates = Regex("""\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b""").containsMatchIn(rawText)
 
         return hasIciciBrand || (hasIciciTable && hasNumericDates) || (hasNumericDates && !upper.contains("INDIAN BANK"))
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     }
 
     override fun parse(rawText: String): List<Transaction> {
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
-<<<<<<< HEAD
-        if (lines.isEmpty()) return emptyList()
-
-        // 1. Filter out pre-table headers and page-break artifacts across all pages
-        val cleanLines = extractTransactionTableLines(lines)
-        if (cleanLines.isEmpty()) return emptyList()
-=======
         if (lines.isEmpty()) {
             lastParsedRows = emptyList()
             return emptyList()
@@ -117,38 +85,26 @@ class IciciBankParser @Inject constructor(
             lastParsedRows = emptyList()
             return emptyList()
         }
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
         // 2. Group lines into transaction blocks across all pages till end
         val blocks = groupIntoTransactionBlocks(cleanLines)
 
         // 3. Parse each block into a Transaction object
         val transactions = mutableListOf<Transaction>()
-<<<<<<< HEAD
-=======
         val parsedRows = mutableListOf<Pair<Transaction, Double?>>()
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         var previousBalance: Double? = null
 
         for (block in blocks) {
             val parsedTx = parseTransactionBlock(block, previousBalance)
             if (parsedTx != null) {
                 transactions.add(parsedTx.transaction)
-<<<<<<< HEAD
-=======
                 parsedRows.add(Pair(parsedTx.transaction, parsedTx.balance))
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                 if (parsedTx.balance != null) {
                     previousBalance = parsedTx.balance
                 }
             }
         }
 
-<<<<<<< HEAD
-        return transactions
-    }
-
-=======
         lastParsedRows = parsedRows
         return transactions
     }
@@ -182,7 +138,6 @@ class IciciBankParser @Inject constructor(
         )
     }
 
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     private fun extractTransactionTableLines(lines: List<String>): List<String> {
         val tableLines = mutableListOf<String>()
         var tableStarted = false
@@ -196,13 +151,6 @@ class IciciBankParser @Inject constructor(
                     upper.contains("TRANSACTION DATE") ||
                     upper.contains("WITHDRAWAL AMOUNT") ||
                     upper.contains("DEPOSIT AMOUNT") ||
-<<<<<<< HEAD
-                    transactionDateRegex.containsMatchIn(line)
-                ) {
-                    tableStarted = true
-                    // If this header line already contains a transaction row, include it
-                    if (transactionDateRegex.containsMatchIn(line) && !upper.contains("TRANSACTION DATE")) {
-=======
                     upper.contains("CHEQUE NUMBER") ||
                     upper.contains("PARTICULARS") ||
                     upper.contains("NARRATION") ||
@@ -211,64 +159,20 @@ class IciciBankParser @Inject constructor(
                     tableStarted = true
                     // If this line contains a transaction row, include it
                     if (transactionDateRegex.containsMatchIn(line) && !isTableHeader(upper)) {
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                         tableLines.add(line)
                     }
                 }
                 continue
             }
 
-<<<<<<< HEAD
-            // Detect genuine final statement footer markers
-            if (isStatementFooter(upper)) {
-                // Do not break early on multi-page intermediate footers unless it's the final closing notice
-                if (upper.contains("LEGENDS FOR TRANSACTIONS") ||
-                    upper.contains("SINCERELY, TEAM ICICI BANK") ||
-                    upper.contains("THIS IS A SYSTEM GENERATED STATEMENT")
-                ) {
-                    // Reached the document end
-                    break
-                }
-                continue
-            }
-
-            // Skip repeated page header lines in multi-page statements
-            if (upper.contains("TRANSACTION REMARKS") ||
-                upper.contains("WITHDRAWAL AMOUNT") ||
-                upper.contains("DEPOSIT AMOUNT") ||
-                upper.contains("STATEMENT OF TRANSACTIONS") ||
-                upper.contains("STATEMENT OF TRANSACTIONS IN SAVING") ||
-                upper.contains("STATEMENT OF TRANSACTIONS IN CURRENT") ||
-                upper.contains("YOUR BASE BRANCH") ||
-                upper.contains("ICICI BANK LIMITED") ||
-                upper.contains("S NO.") ||
-                upper.contains("CHEQUE NUMBER") ||
-                upper.matches(Regex("""PAGE\s+\d+\s+OF\s+\d+""")) ||
-                upper.matches(Regex("""\d+\s+OF\s+\d+"""))
-            ) {
-=======
             // Skip repeated page header lines and disclaimer noise in multi-page statements
             if (isStatementHeaderOrFooter(upper)) {
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                 continue
             }
 
             tableLines.add(line)
         }
 
-<<<<<<< HEAD
-        return tableLines
-    }
-
-    private fun isStatementFooter(upperLine: String): Boolean {
-        return upperLine.contains("SINCERELY, TEAM ICICI BANK") ||
-                upperLine.contains("TEAM ICICI BANK") ||
-                upperLine.contains("LEGENDS FOR TRANSACTIONS") ||
-                upperLine.contains("THIS IS A SYSTEM GENERATED STATEMENT") ||
-                upperLine.contains("NEVER SHARE YOUR OTP") ||
-                upperLine.contains("WWW.ICICI.BANK.IN") ||
-                upperLine.contains("DIAL YOUR BANK")
-=======
         // If tableStarted never triggered but document has date lines
         if (tableLines.isEmpty()) {
             return lines.filter { line ->
@@ -335,7 +239,6 @@ class IciciBankParser @Inject constructor(
                 upper.contains("ADDRESS :") ||
                 upper.contains("PHONE NO") ||
                 upper.contains("EMAIL ID")
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     }
 
     private fun groupIntoTransactionBlocks(lines: List<String>): List<List<String>> {
@@ -343,10 +246,6 @@ class IciciBankParser @Inject constructor(
         var currentBlock: MutableList<String>? = null
 
         for (line in lines) {
-<<<<<<< HEAD
-            val match = transactionDateRegex.find(line)
-            if (match != null && match.range.first <= 5) {
-=======
             val upper = line.uppercase()
             if (isStatementHeaderOrFooter(upper)) {
                 continue
@@ -354,7 +253,6 @@ class IciciBankParser @Inject constructor(
 
             val match = transactionDateRegex.find(line)
             if (match != null) {
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                 // New transaction starts here
                 currentBlock = mutableListOf(line)
                 blocks.add(currentBlock)
@@ -386,12 +284,8 @@ class IciciBankParser @Inject constructor(
         val dateTimestamp = parseDate(rawDateStr) ?: return null
 
         val fullBlockText = blockLines.joinToString("\n")
-<<<<<<< HEAD
-        val textWithoutDates = fullBlockText.replace(Regex("""\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b"""), " ")
-=======
         val textWithoutDates = fullBlockText.replace(Regex("""\b\d{1,2}[./-](?:\d{1,2}|[A-Za-z]{3})[./-]\d{2,4}\b"""), " ")
             .replace(Regex("""\b\d{4}-\d{2}-\d{2}\b"""), " ")
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
         // 1. Extract Amounts and Running Balance
         val amountsFound = amountRegex.findAll(textWithoutDates).mapNotNull { match ->
@@ -405,9 +299,6 @@ class IciciBankParser @Inject constructor(
         var runningBalance: Double? = null
         var txType: TransactionType = TransactionType.EXPENSE
 
-<<<<<<< HEAD
-        if (amountsFound.size >= 2) {
-=======
         if (amountsFound.size >= 3) {
             val withdrawal = amountsFound[0]
             val deposit = amountsFound[1]
@@ -428,7 +319,6 @@ class IciciBankParser @Inject constructor(
                 txType = TransactionType.EXPENSE
             }
         } else if (amountsFound.size == 2) {
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             txAmount = amountsFound[0]
             runningBalance = amountsFound[1]
 
@@ -453,12 +343,8 @@ class IciciBankParser @Inject constructor(
         val remarksInfo = extractRemarksInfo(blockLines, dateMatch.value)
 
         // 3. Categorization
-<<<<<<< HEAD
-        val categoryResult = categoryRuleEngine.categorize(remarksInfo.displayDescription)
-=======
         val isIncome = (txType == TransactionType.INCOME || txType == TransactionType.CREDIT)
         val categoryResult = categoryRuleEngine.categorize(remarksInfo.displayDescription, isIncome)
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
         // Override category for salary credits if remarks explicitly indicate Salary
         val finalCategory = if (txType == TransactionType.INCOME &&
@@ -475,13 +361,9 @@ class IciciBankParser @Inject constructor(
             description = remarksInfo.displayDescription,
             category = finalCategory,
             dateTimestamp = dateTimestamp,
-<<<<<<< HEAD
-            referenceNumber = remarksInfo.referenceNumber
-=======
             referenceNumber = remarksInfo.referenceNumber,
             bankName = "ICICI Bank",
             rawDescription = remarksInfo.rawRemarks
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         )
 
         return ParsedBlockResult(transaction, runningBalance)
@@ -489,12 +371,8 @@ class IciciBankParser @Inject constructor(
 
     private data class RemarksInfo(
         val displayDescription: String,
-<<<<<<< HEAD
-        val referenceNumber: String?
-=======
         val referenceNumber: String?,
         val rawRemarks: String
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     )
 
     private fun extractRemarksInfo(blockLines: List<String>, datePrefix: String): RemarksInfo {
@@ -616,12 +494,8 @@ class IciciBankParser @Inject constructor(
 
         return RemarksInfo(
             displayDescription = finalDescription,
-<<<<<<< HEAD
-            referenceNumber = reference
-=======
             referenceNumber = reference,
             rawRemarks = cleanedRemarks
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         )
     }
 
@@ -655,17 +529,6 @@ class IciciBankParser @Inject constructor(
     }
 
     private fun parseDate(dateStr: String): Long? {
-<<<<<<< HEAD
-        val clean = dateStr.trim()
-        for (format in supportedDateFormats) {
-            try {
-                val date = format.parse(clean)
-                if (date != null) return date.time
-            } catch (_: Exception) {}
-        }
-        return null
-=======
         return DateParserUtils.parseDate(dateStr)
->>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     }
 }
