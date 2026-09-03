@@ -82,13 +82,15 @@ class HdfcBankParser @Inject constructor(
             return emptyList()
         }
 
-        val cleanLines = extractTransactionTableLines(lines)
+        val accountBranch = extractAccountBranch(rawText)
+
+        val cleanLines = extractTransactionTableLines(lines, accountBranch)
         if (cleanLines.isEmpty()) {
             lastParsedRows = emptyList()
             return emptyList()
         }
 
-        val blocks = groupIntoTransactionBlocks(cleanLines)
+        val blocks = groupIntoTransactionBlocks(cleanLines, accountBranch)
 
         val transactions = mutableListOf<Transaction>()
         val parsedRows = mutableListOf<Pair<Transaction, Double?>>()
@@ -97,7 +99,7 @@ class HdfcBankParser @Inject constructor(
         var previousBalance: Double? = explicitSummary?.openingBalance
 
         for ((index, block) in blocks.withIndex()) {
-            val parsedTx = parseTransactionBlock(block, previousBalance, index)
+            val parsedTx = parseTransactionBlock(block, previousBalance, index, accountBranch)
             if (parsedTx != null) {
                 transactions.add(parsedTx.transaction)
                 parsedRows.add(Pair(parsedTx.transaction, parsedTx.balance))
@@ -109,6 +111,27 @@ class HdfcBankParser @Inject constructor(
 
         lastParsedRows = parsedRows
         return transactions
+    }
+
+    private fun extractAccountBranch(text: String): String? {
+        val match = Regex("""Account Branch\s*:\s*([^\n\r]+)""", RegexOption.IGNORE_CASE).find(text)
+        if (match != null) {
+            val raw = match.groupValues[1].trim()
+            val branch = raw.split("-", ",", ";").firstOrNull()?.trim()
+            if (!branch.isNullOrBlank() && branch.length >= 3) {
+                return branch
+            }
+            return raw.take(30).trim()
+        }
+        val reqBranchMatch = Regex("""Requesting Branch\s*:\s*([^\n\r]+)""", RegexOption.IGNORE_CASE).find(text)
+        if (reqBranchMatch != null) {
+            val raw = reqBranchMatch.groupValues[1].trim()
+            val branch = raw.split("-", ",", ";").firstOrNull()?.trim()
+            if (!branch.isNullOrBlank() && branch.length >= 3) {
+                return branch
+            }
+        }
+        return null
     }
 
     override fun extractSummary(rawText: String, transactions: List<Transaction>): StatementSummary? {
@@ -204,7 +227,7 @@ class HdfcBankParser @Inject constructor(
         return null
     }
 
-    private fun extractTransactionTableLines(lines: List<String>): List<String> {
+    private fun extractTransactionTableLines(lines: List<String>, accountBranch: String? = null): List<String> {
         val tableLines = mutableListOf<String>()
         var tableStarted = false
 
@@ -219,7 +242,7 @@ class HdfcBankParser @Inject constructor(
                     upper.contains("DEPOSIT AMT") ||
                     upper.contains("VALUE DT") ||
                     upper.contains("CLOSING BALANCE") ||
-                    transactionDateRegex.containsMatchIn(line)) && !isFinalStatementSummary(upper) && !isStatementNoise(upper)
+                    transactionDateRegex.containsMatchIn(line)) && !isFinalStatementSummary(upper) && !isStatementNoise(upper, accountBranch)
                 ) {
                     tableStarted = true
                     if (transactionDateRegex.containsMatchIn(line) && !isTableHeader(upper)) {
@@ -234,7 +257,7 @@ class HdfcBankParser @Inject constructor(
                 break
             }
 
-            if (isStatementHeaderOrFooter(upper)) {
+            if (isStatementHeaderOrFooter(upper, accountBranch)) {
                 continue
             }
 
@@ -244,7 +267,7 @@ class HdfcBankParser @Inject constructor(
         if (tableLines.isEmpty()) {
             return lines.filter { line ->
                 val upper = line.uppercase()
-                !isStatementHeaderOrFooter(upper)
+                !isStatementHeaderOrFooter(upper, accountBranch)
             }
         }
 
@@ -266,7 +289,10 @@ class HdfcBankParser @Inject constructor(
                 upper.contains("ACCOUNT STATEMENT")
     }
 
-    private fun isStatementNoise(upper: String): Boolean {
+    private fun isStatementNoise(upper: String, accountBranch: String? = null): Boolean {
+        if (accountBranch != null && upper.contains(accountBranch.uppercase())) {
+            return true
+        }
         return upper.contains("HDFC BANK LIMITED") ||
                 upper.contains("HDFC BANK HOUSE") ||
                 upper.contains("WWW.HDFCBANK.COM") ||
@@ -294,13 +320,19 @@ class HdfcBankParser @Inject constructor(
                 upper.contains("PAGE NO") ||
                 upper.contains("PAGE NO.") ||
                 upper.contains("PAGE NO .:") ||
+                upper.contains("THE ADDRESS ON THIS STATEMENT") ||
+                upper.contains("DAY OF REQUESTING") ||
+                upper.contains("REQUESTING THIS STATEMENT") ||
+                upper.contains("REPORTED WITHIN 30 DAYS") ||
+                upper.contains("WITHIN 30 DAYS OF RECEIPT") ||
+                upper.contains("KODAMBAKKAM") ||
                 upper.matches(Regex(""".*PAGE\s*(?:NO)?[\s.:]*\d+.*""")) ||
                 upper.matches(Regex(""".*\d+\s+OF\s+\d+.*""")) ||
                 upper.matches(Regex(""".*\b[A-Z\s,]+-\s*\d{6}\b.*"""))
     }
 
-    private fun isStatementHeaderOrFooter(upper: String): Boolean {
-        if (isTableHeader(upper) || isStatementNoise(upper) || isFinalStatementSummary(upper)) {
+    private fun isStatementHeaderOrFooter(upper: String, accountBranch: String? = null): Boolean {
+        if (isTableHeader(upper) || isStatementNoise(upper, accountBranch) || isFinalStatementSummary(upper)) {
             return true
         }
         return upper.contains("STATEMENT OF ACCOUNT") ||
@@ -355,13 +387,17 @@ class HdfcBankParser @Inject constructor(
                 upper.contains("HOUSE NO")
     }
 
-    private fun groupIntoTransactionBlocks(lines: List<String>): List<List<String>> {
+    private fun groupIntoTransactionBlocks(lines: List<String>, accountBranch: String? = null): List<List<String>> {
         val blocks = mutableListOf<MutableList<String>>()
         var currentBlock: MutableList<String>? = null
 
         for (line in lines) {
             val upper = line.uppercase()
-            if (isStatementHeaderOrFooter(upper)) {
+            if (isStatementHeaderOrFooter(upper, accountBranch)) {
+                // If this is statement noise or summary footer, seal the current transaction block!
+                if (isStatementNoise(upper, accountBranch) || isFinalStatementSummary(upper)) {
+                    currentBlock = null
+                }
                 continue
             }
 
@@ -387,7 +423,8 @@ class HdfcBankParser @Inject constructor(
     private fun parseTransactionBlock(
         blockLines: List<String>,
         previousBalance: Double?,
-        blockIndex: Int = 0
+        blockIndex: Int = 0,
+        accountBranch: String? = null
     ): ParsedBlockResult? {
         if (blockLines.isEmpty()) return null
 
@@ -485,8 +522,8 @@ class HdfcBankParser @Inject constructor(
                 v != "000000" && !v.startsWith("00000")
             }?.groupValues?.get(1)
 
-        val rawDescription = extractNarration(fullBlockText, dateMatch.value, amountMatches.map { it.first })
-        val remarksInfo = parseRemarks(rawDescription, transactionType == TransactionType.INCOME)
+        val rawDescription = extractNarration(fullBlockText, dateMatch.value, amountMatches.map { it.first }, accountBranch)
+        val remarksInfo = parseRemarks(rawDescription, transactionType == TransactionType.INCOME, accountBranch)
 
         val resolvedRefNumber = remarksInfo.referenceNumber ?: chequeMatch?.let { "CHQ $it" }
 
@@ -498,6 +535,8 @@ class HdfcBankParser @Inject constructor(
             isIncome && (upperDesc.contains("INTEREST") || upperDesc.contains("INT PAID")) -> Category.OTHER_INCOME
             isIncome && upperDesc.contains("SALARY") -> Category.SALARY
             !isIncome && (upperDesc.contains("MIN BAL") || upperDesc.contains("MINIMUM BAL") || upperDesc.contains("CHARGE")) -> Category.UTILITIES
+            !isIncome && (upperDesc.contains("EMI") || upperDesc.contains("LOAN")) -> Category.HOUSING
+            !isIncome && (upperDesc.contains("BILLPAY") || upperDesc.contains("CARDS") || upperDesc.contains("CREDIT CARD")) -> Category.UTILITIES
             else -> categoryResult.category
         }
 
@@ -519,7 +558,8 @@ class HdfcBankParser @Inject constructor(
     private fun extractNarration(
         fullText: String,
         dateMatchStr: String,
-        amounts: List<Double>
+        amounts: List<Double>,
+        accountBranch: String? = null
     ): String {
         var text = fullText
         text = text.replace(dateMatchStr, " ")
@@ -546,7 +586,9 @@ class HdfcBankParser @Inject constructor(
             "Generated On", "Generated By", "Requesting Branch", "not require signature",
             "does not require signature", "Closing balance includes", "State account branch GSTN",
             "HDFC BANK LIMITED", "Registered Office Address", "Contents of this statement",
-            "Contents of This Statement", "This Statement", "Page No", "Page No.",
+            "Contents of This Statement", "This Statement", "The address on this statement",
+            "as at the day of requesting", "day of requesting this statement", "requesting this statement",
+            "will be considered correct", "reported within 30 days", "Page No", "Page No.",
             "Statement of account", "Account Branch", "We understand your world", "Cust ID",
             "A/c Open Date", "Account Status", "Nomination", "Statement From", "HDFC Bank GSTIN",
             "PB Customer", "Product Code", "Opp. to", "Showroom", "OD Limit", "Branch :"
@@ -556,6 +598,18 @@ class HdfcBankParser @Inject constructor(
             if (pos >= 0) {
                 text = text.substring(0, pos)
             }
+        }
+
+        // Dynamically truncate account branch or Kodambakkam if present
+        if (!accountBranch.isNullOrBlank()) {
+            val posBranch = text.indexOf(accountBranch, ignoreCase = true)
+            if (posBranch >= 0) {
+                text = text.substring(0, posBranch)
+            }
+        }
+        val posKodam = text.indexOf("Kodambakkam", ignoreCase = true)
+        if (posKodam >= 0) {
+            text = text.substring(0, posKodam)
         }
 
         // Remove any trailing postal addresses / PIN patterns (e.g. "Kodambakkam, Chennai - 600024")
@@ -574,31 +628,75 @@ class HdfcBankParser @Inject constructor(
         val referenceNumber: String?
     )
 
-    private fun parseRemarks(rawDescription: String, isIncome: Boolean = false): RemarksInfo {
+    private fun parseRemarks(rawDescription: String, isIncome: Boolean = false, accountBranch: String? = null): RemarksInfo {
         val cleanText = rawDescription.replace(Regex("""\s+"""), " ").trim()
         val upper = cleanText.uppercase()
 
-        // 1. INTEREST PAID TILL DD-MMM-YYYY
+        // 1. INTEREST PAID TILL DD-MMM-YYYY / CREDIT INTEREST CAPITALISED
         if (upper.contains("INTEREST PAID") || upper.contains("INT. PAID") || upper.contains("CREDIT INTEREST")) {
-            val titleCased = cleanText.split(" ").joinToString(" ") { word ->
-                if (word.uppercase() == "TILL") "till"
-                else word.lowercase().replaceFirstChar { it.uppercase() }
+            val titleCased = if (upper.contains("CREDIT INTEREST CAPITALISED")) {
+                "Credit Interest Capitalised"
+            } else {
+                cleanText.split(" ").joinToString(" ") { word ->
+                    if (word.uppercase() == "TILL") "till"
+                    else word.lowercase().replaceFirstChar { it.uppercase() }
+                }
             }
             return RemarksInfo(titleCased, "HDFC Bank", extractRefNumber(cleanText))
         }
 
-        // 2. MIN BAL MAINTAIN / MINIMUM BALANCE CHARGES
+        // 2. MICRO ATM CASH DEP
+        if (upper.contains("MICRO ATM") || upper.contains("CASH DEP")) {
+            val location = if (upper.contains("THANE")) " - Thane" else ""
+            return RemarksInfo("Micro ATM Cash Deposit$location", "HDFC Bank", extractRefNumber(cleanText))
+        }
+
+        // 3. IB BILLPAY DR
+        if (upper.contains("IB BILLPAY")) {
+            val cardMatch = Regex("""\b(?:545964|416021)?[X*]+(\d{4})\b""").find(cleanText)
+            val desc = if (cardMatch != null) "HDFC BillPay (Card ending ${cardMatch.groupValues[1]})" else "HDFC BillPay"
+            return RemarksInfo(desc, "HDFC BillPay", extractRefNumber(cleanText))
+        }
+
+        // 4. NetBanking BillPay (NHDF6376325463/SBI CARDS, NHDF6385796167/BILLDKVODAFONEINDIAL)
+        if (upper.startsWith("NHDF") || (upper.contains("/") && (upper.contains("CARDS") || upper.contains("BILL")))) {
+            val slashIndex = cleanText.indexOf('/')
+            if (slashIndex >= 0 && slashIndex < cleanText.length - 1) {
+                var billPayee = cleanText.substring(slashIndex + 1).trim()
+                val upperPayee = billPayee.uppercase()
+                if (upperPayee.startsWith("BILLDK")) {
+                    billPayee = billPayee.substring(6)
+                }
+                if (upperPayee.contains("VODAFONE")) {
+                    billPayee = "Vodafone India Bill"
+                } else if (upperPayee.contains("KOTAK")) {
+                    billPayee = "Kotak Cards"
+                } else if (upperPayee.contains("SBI")) {
+                    billPayee = "SBI Cards"
+                } else {
+                    billPayee = formatTitleCase(billPayee)
+                }
+                return RemarksInfo(billPayee, billPayee, extractRefNumber(cleanText))
+            }
+        }
+
+        // 5. EMI Loans (e.g. EMI 4923306 CHQ S49233060051 0618492330 6)
+        if (upper.startsWith("EMI ")) {
+            return RemarksInfo("EMI Payment", "EMI", extractRefNumber(cleanText))
+        }
+
+        // 6. MIN BAL MAINTAIN / MINIMUM BALANCE CHARGES
         if (upper.contains("MIN BAL") || upper.contains("MINIMUM BAL")) {
             val titleCased = "Min Balance Maintenance"
             return RemarksInfo(titleCased, "HDFC Bank", extractRefNumber(cleanText))
         }
 
-        // 3. Hyphenated Narration Format (Payment Mode - Ref - Name - Bank - Acc - Reason)
+        // 7. Hyphenated Narration Format (Payment Mode - Ref - Name - Bank - Acc - Reason)
         if (cleanText.contains("-")) {
-            return parseHyphenatedHdfcNarration(cleanText)
+            return parseHyphenatedHdfcNarration(cleanText, accountBranch)
         }
 
-        // 4. POS / Card purchases
+        // 8. POS / Card purchases
         if (upper.startsWith("POS") || upper.contains("POS ")) {
             var merchantName: String? = null
             val parts = cleanText.split(" ")
@@ -609,14 +707,21 @@ class HdfcBankParser @Inject constructor(
                         !pUpper.contains("XXXX") &&
                         pUpper != "IN" &&
                         pUpper != "IND" &&
+                        pUpper != "DE" &&
+                        pUpper != "BIT" &&
+                        pUpper != "DEBIT" &&
                         pUpper.length > 1
             }
             if (merchantParts.isNotEmpty()) {
                 val cleanedMerchantParts = mutableListOf<String>()
                 val stateCodes = setOf("KA", "MH", "TN", "DL", "TS", "AP", "WB", "GJ", "UP", "HR", "KL", "MP")
                 for (p in merchantParts) {
-                    if (stateCodes.contains(p.uppercase()) && p == merchantParts.last()) continue
-                    cleanedMerchantParts.add(p)
+                    var candidate = p
+                    if (candidate.uppercase().startsWith("DCSI")) {
+                        candidate = candidate.substring(4)
+                    }
+                    if (stateCodes.contains(candidate.uppercase()) && candidate == merchantParts.last()) continue
+                    if (candidate.isNotBlank()) cleanedMerchantParts.add(candidate)
                 }
 
                 merchantName = (if (cleanedMerchantParts.isNotEmpty()) cleanedMerchantParts else merchantParts)
@@ -627,7 +732,7 @@ class HdfcBankParser @Inject constructor(
             }
         }
 
-        // 5. Default Title Case
+        // 9. Default Title Case
         val defaultTitle = cleanText.split(" ").joinToString(" ") { word ->
             if (word.length <= 3 && word.all { it.isLetter() }) word.uppercase()
             else word.lowercase().replaceFirstChar { it.uppercase() }
@@ -640,7 +745,7 @@ class HdfcBankParser @Inject constructor(
         )
     }
 
-    private fun parseHyphenatedHdfcNarration(cleanText: String): RemarksInfo {
+    private fun parseHyphenatedHdfcNarration(cleanText: String, accountBranch: String? = null): RemarksInfo {
         val rawParts = cleanText.split("-").map { it.trim() }.filter { it.isNotBlank() }
         if (rawParts.size < 2) {
             val titleCased = formatTitleCase(cleanText)
@@ -652,10 +757,11 @@ class HdfcBankParser @Inject constructor(
         val textParts = mutableListOf<String>()
 
         val knownModes = setOf(
-            "UPI", "IMPS", "TIMPS", "NEFT", "RTGS", "FT", "POS", "ACH", "ATW", "INB",
-            "NWD", "REV", "VISA", "MC", "CHQ", "PAY", "BILL"
+            "UPI", "IMPS", "TIMPS", "NEFT", "NEFT DR", "NEFT CR", "RTGS", "RTGS DR", "RTGS CR",
+            "FT", "POS", "ACH", "ACH D", "ACH C", "ATW", "INB", "NWD", "REV", "VISA", "MC", "CHQ", "PAY", "BILL"
         )
-        val bankCodeRegex = Regex("""^(HDFC|ICIC|SBIN|UTIB|YESB|KKBK|BARB|CNRB|PUNB|INDB|FDRL|IDFB|CITI|HSBC|SCBL|PAYTM|PYTM|STATE|AXIS|BOI)$""", RegexOption.IGNORE_CASE)
+        val bankCodeRegex = Regex("""^(HDFC|HDF|ICICI|ICIC|SBIN|SBI|UTIB|AXIS|YESB|YES|KKBK|KOTAK|BARB|BOB|CNRB|CANARA|PUNB|PNB|INDB|FDRL|FEDERAL|IDFB|IDFC|CITI|HSBC|SCBL|PAYTM|PYTM|STATE|BOI)$""", RegexOption.IGNORE_CASE)
+        val ifscRegex = Regex("""^[A-Z]{4}0[A-Z0-9]{6}$""", RegexOption.IGNORE_CASE)
         val maskedAccRegex = Regex("""^[X*]+\d*$|^[X*\d]{8,}$""", RegexOption.IGNORE_CASE)
 
         for ((index, part) in rawParts.withIndex()) {
@@ -663,25 +769,41 @@ class HdfcBankParser @Inject constructor(
 
             // Check if first part is Payment Mode
             if (index == 0 && knownModes.contains(upperPart)) {
-                mode = upperPart
+                mode = when {
+                    upperPart.startsWith("NEFT") -> "NEFT"
+                    upperPart.startsWith("RTGS") -> "RTGS"
+                    upperPart.startsWith("ACH") -> "ACH"
+                    else -> upperPart
+                }
                 continue
             }
 
-            // In HDFC UPI narrations (UPI-RRN-PAYEE-BANK-ACC-REASON), segment 1 is strictly the 12-digit RRN
-            if (mode == "UPI" && index == 1 && part.matches(Regex("""\d{10,14}"""))) {
+            // In HDFC UPI narrations (UPI-ID-PAYEE-RRN-REASON), a 12-digit segment is strictly the NPCI RRN
+            if (mode == "UPI" && part.matches(Regex("""\d{12}"""))) {
                 refNumber = part
                 continue
             }
+            if (mode == "UPI" && index == 1 && part.matches(Regex("""\d{10,18}"""))) {
+                if (refNumber == null) refNumber = part
+                continue
+            }
 
-            // Check if part is a reference number
-            if (refNumber == null && (part.matches(Regex("""\d{10,18}""")) || upperPart.startsWith("TIMPS") || upperPart.startsWith("000FT") || upperPart.startsWith("UTRN"))) {
+            // Check if part is a reference number (e.g. UTR N155180555427618 or 12-digit RRN)
+            if (refNumber == null && (part.matches(Regex("""\d{10,18}""")) ||
+                        part.matches(Regex("""[A-Z0-9]{16,22}""")) ||
+                        upperPart.startsWith("TIMPS") || upperPart.startsWith("000FT") || upperPart.startsWith("UTRN"))) {
                 refNumber = part.replace(Regex("""^0+"""), "")
                 if (refNumber.length < 6) refNumber = part
                 continue
             }
 
-            // Check if part is bank code or masked account
-            if (bankCodeRegex.matches(upperPart) || maskedAccRegex.matches(upperPart)) {
+            // Skip bank code, IFSC, or masked account
+            if (bankCodeRegex.matches(upperPart) || ifscRegex.matches(upperPart) || maskedAccRegex.matches(upperPart)) {
+                continue
+            }
+
+            // Skip channel noise (e.g. NETBANK, MUM)
+            if (upperPart.startsWith("NETBANK")) {
                 continue
             }
 
@@ -690,6 +812,11 @@ class HdfcBankParser @Inject constructor(
                 if (refNumber == null && part.length >= 8) {
                     refNumber = part
                 }
+                continue
+            }
+
+            // Skip footer/branch noise that got into tokens
+            if (upperPart.contains("KODAMBAKKAM") || (accountBranch != null && upperPart.contains(accountBranch.uppercase()))) {
                 continue
             }
 
@@ -708,20 +835,20 @@ class HdfcBankParser @Inject constructor(
             // HDFC layout: Payment mode - Ref - Receiver/Sender Name - Bank - Acc - Reason
             name = formatTitleCase(textParts.first())
             val rawReasonCandidate = textParts.last()
-            reason = cleanReasonString(rawReasonCandidate, refNumber)
+            reason = cleanReasonString(rawReasonCandidate, refNumber, accountBranch)
 
             if (reason == null && textParts.size > 2) {
                 val middleCandidate = textParts[textParts.size - 2]
-                val cleanedMiddle = cleanReasonString(middleCandidate, refNumber)
+                val cleanedMiddle = cleanReasonString(middleCandidate, refNumber, accountBranch)
                 if (cleanedMiddle != null && cleanedMiddle != name) {
                     reason = cleanedMiddle
                 }
             }
         } else if (textParts.size == 1) {
             val singleText = textParts.first()
-            val cleanedSingle = cleanReasonString(singleText, refNumber)
+            val cleanedSingle = cleanReasonString(singleText, refNumber, accountBranch)
             if (cleanedSingle != null) {
-                reason = cleanedSingle
+                name = cleanedSingle
             }
         }
 
@@ -730,9 +857,20 @@ class HdfcBankParser @Inject constructor(
             reason = null
         }
 
+        // If name is a UPI VPA (e.g. 9307676700@UPI or swiggy@icici), format it cleanly
+        if (name != null && name.contains("@")) {
+            val vpaParts = name.split("@")
+            val userPart = vpaParts[0].trim()
+            if (userPart.matches(Regex("""\d{10}"""))) {
+                name = "UPI: $userPart"
+            } else if (userPart.length > 2) {
+                name = formatTitleCase(userPart)
+            }
+        }
+
         val displayDesc = when {
             reason != null -> reason
-            name != null -> if (mode != null && mode != "FT") "$mode: $name" else name
+            name != null -> if (mode != null && mode != "FT" && !name.startsWith(mode)) "$mode: $name" else name
             mode != null -> "$mode Transfer"
             else -> formatTitleCase(cleanText)
         }
@@ -744,12 +882,12 @@ class HdfcBankParser @Inject constructor(
         )
     }
 
-    private fun cleanReasonString(rawReason: String, refNumber: String?): String? {
+    private fun cleanReasonString(rawReason: String, refNumber: String?, accountBranch: String? = null): String? {
         var text = rawReason.trim()
         if (text.isBlank()) return null
 
         val upper = text.uppercase()
-        if (isStatementHeaderOrFooter(upper) ||
+        if (isStatementHeaderOrFooter(upper, accountBranch) ||
             upper.contains("NOMINATION") ||
             upper.contains("OPEN DATE") ||
             upper.contains("SHOWROOM") ||
@@ -761,7 +899,11 @@ class HdfcBankParser @Inject constructor(
             upper.contains("PB CUSTOMER") ||
             upper.contains("PRODUCT CODE") ||
             upper.contains("REGISTERED") ||
-            upper.contains("BRANCH")
+            upper.contains("BRANCH") ||
+            upper.contains("KODAMBAKKAM") ||
+            (accountBranch != null && upper.contains(accountBranch.uppercase())) ||
+            upper.contains("CONSIDERED CORRECT") ||
+            upper.contains("REQUESTING")
         ) {
             return null
         }
@@ -769,7 +911,8 @@ class HdfcBankParser @Inject constructor(
         // Filter out non-informative generic reason tokens so we fall back to the actual Payee/Merchant name
         val genericNoiseTokens = setOf(
             "NA", "NIL", "NONE", "PAYMENT", "TRANSFER", "IMPS", "UPI", "NEFT", "RTGS",
-            "SENT USING UPI", "PAID VIA UPI", "PAY", "BILLPAY", "BILL"
+            "SENT USING UPI", "PAID VIA UPI", "PAY", "BILLPAY", "BILL", "OK", "SUCCESS",
+            "SUCCESSFUL", "COMPLETED", "DR", "CR", "NETBANK", "PERSONAL"
         )
         if (genericNoiseTokens.contains(upper)) {
             return null

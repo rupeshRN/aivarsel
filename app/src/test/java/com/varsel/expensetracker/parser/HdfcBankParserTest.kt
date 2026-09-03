@@ -151,4 +151,55 @@ class HdfcBankParserTest {
         org.junit.Assert.assertFalse(transactions[0].description.contains("Kodambakkam"))
         org.junit.Assert.assertFalse(transactions[1].description.contains("Kodambakkam"))
     }
+
+    @Test
+    fun testRealHdfcStatementSampleFromUserImage() {
+        val sampleStatement = """
+            HDFC BANK LIMITED
+            ACCOUNT STATEMENT
+            Account Branch : Kodambakkam
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            03/07/18 IMPS-818411585956-ARUNARAVINDRADUBEY-HDF 0000818411585956 03/07/18 3,000.00 10,633.81
+            03/07/18 NEFT DR-UBIN0539686-RAJU DUBEY-NETBANK, MUM-N155180555427618-PERSONAL 000000000000000 03/07/18 5,000.00 5,633.81
+            04/07/18 NHDF6376325463/SBI CARDS 000000000000000 04/07/18 2,150.00 3,483.81
+            04/07/18 UPI-303702011409044-9307676700@UPI-815518551633-OK 000000000000000 04/07/18 100.00 3,383.81
+            05/07/18 CREDIT INTEREST CAPITALISED 000000000000000 05/07/18 152.00 3,535.81
+            Contents of this statement will be considered correct if no error is reported within 30 days of receipt of statement. The address on this statement is that on record with the Bank as at the day of requesting this statement.
+            Kodambakkam,
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(sampleStatement)
+        assertEquals(5, transactions.size)
+
+        // 1. IMPS
+        assertEquals(3000.00, transactions[0].amount, 0.001)
+        assertEquals("IMPS: Arunaravindradubey", transactions[0].description)
+        assertEquals("818411585956", transactions[0].referenceNumber)
+
+        // 2. NEFT
+        assertEquals(5000.00, transactions[1].amount, 0.001)
+        assertEquals("NEFT: Raju Dubey", transactions[1].description)
+        assertEquals("N155180555427618", transactions[1].referenceNumber)
+
+        // 3. BillPay / Cards
+        assertEquals(2150.00, transactions[2].amount, 0.001)
+        assertEquals("SBI Cards", transactions[2].description)
+
+        // 4. UPI
+        assertEquals(100.00, transactions[3].amount, 0.001)
+        assertEquals("UPI: 9307676700", transactions[3].description)
+        assertEquals("815518551633", transactions[3].referenceNumber)
+
+        // 5. Credit Interest
+        assertEquals(152.00, transactions[4].amount, 0.001)
+        assertEquals(TransactionType.INCOME, transactions[4].type)
+        assertEquals("Credit Interest Capitalised", transactions[4].description)
+
+        // Assert all transactions are clean of "Kodambakkam" and "This Statement"
+        for (tx in transactions) {
+            org.junit.Assert.assertFalse(tx.description.contains("Kodambakkam", ignoreCase = true))
+            org.junit.Assert.assertFalse(tx.description.contains("This Statement", ignoreCase = true))
+            org.junit.Assert.assertFalse(tx.rawDescription.orEmpty().contains("Kodambakkam", ignoreCase = true))
+        }
+    }
 }
