@@ -24,7 +24,7 @@ class AutoTransferReconciliationEngine @Inject constructor(
 
         // Regex to match transfer-indicating keywords in transaction narration
         private val TRANSFER_KEYWORDS_REGEX = Regex(
-            """\b(transfer|trf|neft|rtgs|imps|upi|self|own\s+acc|fund\s+trf)\b""",
+            """\b(transfer|trf|neft|rtgs|imps|upi|self|own\s+acc|fund\s+trf|fnd\s+trf|to\s+ib|to\s+icici|indian\s+bank|icici|hdfc|sbi|axis|kotak|idib)\b""",
             RegexOption.IGNORE_CASE
         )
 
@@ -37,8 +37,8 @@ class AutoTransferReconciliationEngine @Inject constructor(
         // Regex to capture explicit account indications like "A/c 9012", "to A/c ...9012"
         private val EXPLICIT_ACCOUNT_REGEX = Regex("""(?:A/c|Acc|Account|to)\s*[:#\-]?\s*X*([0-9]{4})\b""", RegexOption.IGNORE_CASE)
 
-        // Regex to capture 10 to 18-digit reference numbers (UTR, RRN, IMPS/UPI ref)
-        private val REF_NUM_REGEX = Regex("""\b([0-9]{10,18})\b""")
+        // Regex to capture 10 to 22-character reference numbers (numeric UTR, RRN, or alphanumeric NEFT/RTGS/IMPS)
+        private val REF_NUM_REGEX = Regex("""\b([0-9]{10,18}|(?:[A-Z]{2,6}[0-9]{6,16})|(?:N[0-9]{11,16}))\b""", RegexOption.IGNORE_CASE)
 
         // Known IFSC bank code prefixes mapped to common bank names
         private val IFSC_PREFIX_MAP = mapOf(
@@ -73,23 +73,15 @@ class AutoTransferReconciliationEngine @Inject constructor(
      */
     suspend fun reconcileTransfers(
         targetTransactionIds: List<Long>? = null,
-        fullHistoricalScan: Boolean = false
+        fullHistoricalScan: Boolean = true
     ): Int {
         val snapshots = statementSnapshotDao.getAllSnapshots()
 
-        val candidates: List<TransactionEntity> = when {
-            !targetTransactionIds.isNullOrEmpty() -> {
-                transactionDao.getTransactionsByIds(targetTransactionIds)
-                    .filter { it.transferLinkId == null }
-            }
-            fullHistoricalScan -> {
-                transactionDao.getAllUnlinkedTransactions()
-            }
-            else -> {
-                // Sliding window scan: past 60 days
-                val minTimestamp = System.currentTimeMillis() - STARTUP_LOOKBACK_MS
-                transactionDao.getRecentUnlinkedTransactionsSince(minTimestamp, limit = 1000)
-            }
+        val candidates: List<TransactionEntity> = if (!targetTransactionIds.isNullOrEmpty()) {
+            transactionDao.getTransactionsByIds(targetTransactionIds)
+                .filter { it.transferLinkId == null }
+        } else {
+            transactionDao.getAllUnlinkedTransactions()
         }
 
         if (candidates.isEmpty()) return 0
@@ -160,8 +152,8 @@ class AutoTransferReconciliationEngine @Inject constructor(
      * Efficiently fetches candidate credits from the database for a given debit.
      */
     private suspend fun fetchCandidateCredits(debit: TransactionEntity): List<TransactionEntity> {
-        val minDate = debit.dateTimestamp - STANDARD_WINDOW_MS
-        val maxDate = debit.dateTimestamp + STANDARD_WINDOW_MS
+        val minDate = debit.dateTimestamp - REF_MATCH_WINDOW_MS
+        val maxDate = debit.dateTimestamp + REF_MATCH_WINDOW_MS
 
         val listByAmount = transactionDao.findUnlinkedTransferCandidates(
             type = "INCOME",
@@ -189,8 +181,8 @@ class AutoTransferReconciliationEngine @Inject constructor(
      * Efficiently fetches candidate debits from the database for a given credit.
      */
     private suspend fun fetchCandidateDebits(credit: TransactionEntity): List<TransactionEntity> {
-        val minDate = credit.dateTimestamp - STANDARD_WINDOW_MS
-        val maxDate = credit.dateTimestamp + STANDARD_WINDOW_MS
+        val minDate = credit.dateTimestamp - REF_MATCH_WINDOW_MS
+        val maxDate = credit.dateTimestamp + REF_MATCH_WINDOW_MS
 
         val listByAmount = transactionDao.findUnlinkedTransferCandidates(
             type = "EXPENSE",
@@ -410,6 +402,41 @@ class AutoTransferReconciliationEngine @Inject constructor(
             }
         }
 
+        //-------------------------------------------------------------
+        // Rule 4: Bank Name Mention in Narration (Confidence: 85)
+        // E.g. Debit in ICICI has description/rawDescription mentioning "Indian Bank", "IDIB",
+        // and credit is in Indian Bank (or vice-versa).
+        //-------------------------------------------------------------
+        val debitText = listOfNotNull(debit.rawDescription, debit.description).joinToString(" ").uppercase()
+        val creditText = listOfNotNull(credit.rawDescription, credit.description).joinToString(" ").uppercase()
+        val creditBankName = (credit.bankName ?: snapshots.find { it.accountId == credit.accountId }?.bankName).orEmpty()
+        val debitBankName = (debit.bankName ?: snapshots.find { it.accountId == debit.accountId }?.bankName).orEmpty()
+
+        val creditBankShort = BankInfoHelper.getBankShortName(creditBankName).uppercase()
+        val debitBankShort = BankInfoHelper.getBankShortName(debitBankName).uppercase()
+
+        val debitMentionsCreditBank = when (creditBankShort) {
+            "IB" -> debitText.contains("INDIAN BANK") || debitText.contains("INDIANBANK") || debitText.contains("IDIB") || debitText.contains("IB")
+            "ICICI" -> debitText.contains("ICICI")
+            "HDFC" -> debitText.contains("HDFC")
+            "SBI" -> debitText.contains("SBI") || debitText.contains("STATE BANK")
+            "AXIS" -> debitText.contains("AXIS") || debitText.contains("UTIB")
+            else -> creditBankName.isNotBlank() && debitText.contains(creditBankName.uppercase())
+        }
+
+        val creditMentionsDebitBank = when (debitBankShort) {
+            "IB" -> creditText.contains("INDIAN BANK") || creditText.contains("INDIANBANK") || creditText.contains("IDIB") || creditText.contains("IB")
+            "ICICI" -> creditText.contains("ICICI")
+            "HDFC" -> creditText.contains("HDFC")
+            "SBI" -> creditText.contains("SBI") || creditText.contains("STATE BANK")
+            "AXIS" -> creditText.contains("AXIS") || creditText.contains("UTIB")
+            else -> debitBankName.isNotBlank() && creditText.contains(debitBankName.uppercase())
+        }
+
+        if (debitMentionsCreditBank || creditMentionsDebitBank) {
+            return 85
+        }
+
         return 0
     }
 
@@ -449,7 +476,7 @@ class AutoTransferReconciliationEngine @Inject constructor(
     }
 
     /**
-     * Extracts all reference numbers (10 to 18 digits) from referenceNumber and narration.
+     * Extracts all reference numbers (numeric and alphanumeric) from referenceNumber and narration.
      */
     private fun extractAllReferenceNumbers(tx: TransactionEntity): Set<String> {
         val results = mutableSetOf<String>()
@@ -458,6 +485,18 @@ class AutoTransferReconciliationEngine @Inject constructor(
         val texts = listOfNotNull(tx.rawDescription, tx.description)
         for (text in texts) {
             REF_NUM_REGEX.findAll(text).forEach { match ->
+                match.groupValues.getOrNull(1)?.let { results.add(it) }
+            }
+            val neftPattern = Regex("""(?:NEFT[-/])([A-Za-z0-9]{8,22})""", RegexOption.IGNORE_CASE)
+            neftPattern.findAll(text).forEach { match ->
+                match.groupValues.getOrNull(1)?.let { results.add(it) }
+            }
+            val upiPattern = Regex("""(?:UPI/)([0-9]{12})""", RegexOption.IGNORE_CASE)
+            upiPattern.findAll(text).forEach { match ->
+                match.groupValues.getOrNull(1)?.let { results.add(it) }
+            }
+            val impsPattern = Regex("""(?:(?:MMT/IMPS|IMPS)/)([0-9A-Za-z]{8,18})""", RegexOption.IGNORE_CASE)
+            impsPattern.findAll(text).forEach { match ->
                 match.groupValues.getOrNull(1)?.let { results.add(it) }
             }
         }

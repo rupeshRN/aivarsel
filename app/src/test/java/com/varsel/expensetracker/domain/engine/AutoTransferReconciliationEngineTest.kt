@@ -291,4 +291,70 @@ class AutoTransferReconciliationEngineTest {
         )
         assertTrue(engine.hasTransferIndicators(txWithUtr))
     }
+
+    @Test
+    fun `test Rule 4 matches transfer when debit narration mentions destination bank name`() {
+        val now = System.currentTimeMillis()
+        val debit = TransactionEntity(
+            id = 701L,
+            amount = 25000.0,
+            type = "EXPENSE",
+            description = "Transfer to Indian Bank",
+            rawDescription = "FND TRF TO INDIAN BANK",
+            category = "Transfer",
+            dateTimestamp = now,
+            bankName = "ICICI Bank",
+            accountId = "acc_icici",
+            accountLast4 = "1111"
+        )
+
+        val credit = TransactionEntity(
+            id = 702L,
+            amount = 25000.0,
+            type = "INCOME",
+            description = "By Transfer - ICICI",
+            rawDescription = "TRANSFER FROM ICICI BANK",
+            category = "Income",
+            dateTimestamp = now + (24 * 60 * 60 * 1000L), // next day
+            bankName = "Indian Bank",
+            accountId = "acc_ib",
+            accountLast4 = "2222"
+        )
+
+        val score = engine.scorePair(debit, credit, emptyList())
+        assertEquals(85, score)
+    }
+
+    @Test
+    fun `test matches alphanumeric NEFT UTR in narration`() {
+        val now = System.currentTimeMillis()
+        val debit = TransactionEntity(
+            id = 801L,
+            amount = 10000.0,
+            type = "EXPENSE",
+            description = "NEFT-N123456789012-Self Transfer",
+            rawDescription = "NEFT-N123456789012-USER NAME",
+            category = "Transfer",
+            dateTimestamp = now,
+            bankName = "ICICI Bank",
+            accountId = "acc_icici",
+            accountLast4 = "1111"
+        )
+
+        val credit = TransactionEntity(
+            id = 802L,
+            amount = 10000.0,
+            type = "INCOME",
+            description = "NEFT / N123456789012 / ICICI BANK",
+            rawDescription = "NEFT / N123456789012 / ICICI",
+            category = "Income",
+            dateTimestamp = now,
+            bankName = "Indian Bank",
+            accountId = "acc_ib",
+            accountLast4 = "2222"
+        )
+
+        val score = engine.scorePair(debit, credit, emptyList())
+        assertEquals(100, score)
+    }
 }
