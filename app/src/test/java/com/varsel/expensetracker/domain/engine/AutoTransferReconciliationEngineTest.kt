@@ -7,6 +7,8 @@ import com.varsel.expensetracker.data.local.entity.TransactionEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -35,6 +37,8 @@ class AutoTransferReconciliationEngineTest {
         override suspend fun findUnlinkedTransferCandidatesByReference(type: String, referenceNumber: String): List<TransactionEntity> = emptyList()
         override suspend fun getTransactionsByIds(ids: List<Long>): List<TransactionEntity> = emptyList()
         override suspend fun getRecentUnlinkedTransactions(limit: Int): List<TransactionEntity> = emptyList()
+        override suspend fun getRecentUnlinkedTransactionsSince(minDateTimestamp: Long, limit: Int): List<TransactionEntity> = emptyList()
+        override suspend fun getAllUnlinkedTransactions(): List<TransactionEntity> = emptyList()
     }
 
     private class FakeStatementSnapshotDao : StatementSnapshotDao {
@@ -217,5 +221,74 @@ class AutoTransferReconciliationEngineTest {
 
         assertEquals(0, engine.scorePair(debit, sameAccountCredit, emptyList()))
         assertEquals(0, engine.scorePair(debit, differentAmountCredit, emptyList()))
+    }
+
+    @Test
+    fun `test matching by reference number across 4 days weekend clearing delay scores 100`() {
+        val juneDebitDate = 1718956800000L // Friday June 21, 2024
+        val juneCreditDate = juneDebitDate + (4L * 24 * 60 * 60 * 1000L) // Tuesday June 25, 2024 (4 days later)
+
+        val debit = TransactionEntity(
+            id = 501L,
+            amount = 15000.0,
+            type = "EXPENSE",
+            description = "Transfer out to Indian Bank",
+            category = "General",
+            dateTimestamp = juneDebitDate,
+            referenceNumber = "417312345678",
+            bankName = "ICICI Bank",
+            accountId = "acc_icici_1",
+            accountLast4 = "1234"
+        )
+
+        val credit = TransactionEntity(
+            id = 502L,
+            amount = 15000.0,
+            type = "INCOME",
+            description = "UPI/417312345678/From ICICI",
+            category = "Income",
+            dateTimestamp = juneCreditDate,
+            referenceNumber = "417312345678",
+            bankName = "Indian Bank",
+            accountId = "acc_ib_1",
+            accountLast4 = "9012"
+        )
+
+        val score = engine.scorePair(debit, credit, emptyList())
+        assertEquals(100, score)
+    }
+
+    @Test
+    fun `test hasTransferIndicators filters non-transfer ordinary expenses`() {
+        val ordinaryCoffee = TransactionEntity(
+            id = 601L,
+            amount = 150.0,
+            type = "EXPENSE",
+            description = "Starbucks Coffee",
+            category = "Food & Dining",
+            dateTimestamp = System.currentTimeMillis()
+        )
+        assertFalse(engine.hasTransferIndicators(ordinaryCoffee))
+
+        val transferExpense = TransactionEntity(
+            id = 602L,
+            amount = 5000.0,
+            type = "EXPENSE",
+            description = "NEFT transfer to account XXXXXXXX9012",
+            category = "Transfer",
+            dateTimestamp = System.currentTimeMillis()
+        )
+        assertTrue(engine.hasTransferIndicators(transferExpense))
+
+        val txWithUtr = TransactionEntity(
+            id = 603L,
+            amount = 2000.0,
+            type = "EXPENSE",
+            description = "Payment",
+            category = "General",
+            dateTimestamp = System.currentTimeMillis(),
+            referenceNumber = "417312345678"
+        )
+        assertTrue(engine.hasTransferIndicators(txWithUtr))
     }
 }

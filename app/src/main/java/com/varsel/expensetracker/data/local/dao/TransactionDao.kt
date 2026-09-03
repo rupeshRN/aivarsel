@@ -386,8 +386,13 @@ interface TransactionDao {
         WHERE transferLinkId IS NULL
         AND type = :type
         AND referenceNumber IS NOT NULL
-        AND referenceNumber = :referenceNumber
-        LIMIT 5
+        AND (
+            referenceNumber = :referenceNumber
+            OR UPPER(TRIM(referenceNumber)) = UPPER(TRIM(:referenceNumber))
+            OR (length(:referenceNumber) >= 8 AND referenceNumber LIKE '%' || :referenceNumber || '%')
+            OR (length(:referenceNumber) >= 8 AND :referenceNumber LIKE '%' || referenceNumber || '%')
+        )
+        LIMIT 10
         """
     )
     suspend fun findUnlinkedTransferCandidatesByReference(
@@ -409,9 +414,34 @@ interface TransactionDao {
         SELECT *
         FROM transactions
         WHERE transferLinkId IS NULL
+        AND dateTimestamp >= :minDateTimestamp
         ORDER BY dateTimestamp DESC
         LIMIT :limit
         """
     )
-    suspend fun getRecentUnlinkedTransactions(limit: Int = 200): List<TransactionEntity>
+    suspend fun getRecentUnlinkedTransactionsSince(
+        minDateTimestamp: Long,
+        limit: Int = 1000
+    ): List<TransactionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE transferLinkId IS NULL
+        ORDER BY dateTimestamp DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getRecentUnlinkedTransactions(limit: Int = 5000): List<TransactionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE transferLinkId IS NULL
+        ORDER BY dateTimestamp DESC
+        """
+    )
+    suspend fun getAllUnlinkedTransactions(): List<TransactionEntity>
 }
