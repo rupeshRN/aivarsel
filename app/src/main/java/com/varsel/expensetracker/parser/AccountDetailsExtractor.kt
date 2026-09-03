@@ -7,6 +7,15 @@ class AccountDetailsExtractor @Inject constructor() {
     private val accountNumberRegex =
         Regex(
             """(?:Saving\s+|Current\s+)?Account\s+(?:Number|no\.?)\s*[:\-]?\s*([A-Za-z0-9Xx]+)""",
+<<<<<<< HEAD
+=======
+            RegexOption.IGNORE_CASE
+        )
+
+    private val ifscRegex =
+        Regex(
+            """(?:IFSC|RTGS/NEFT\s+IFSC)(?:\s+Code)?\s*[:\-]?\s*([A-Za-z]{4}0[A-Za-z0-9]{6})""",
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             RegexOption.IGNORE_CASE
         )
 
@@ -22,5 +31,16 @@ class AccountDetailsExtractor @Inject constructor() {
             ?.takeIf {
                 it.isNotBlank()
             }
+    }
+
+    fun extractIfscCode(
+        rawText: String
+    ): String? {
+        return ifscRegex
+            .find(rawText)
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.trim()
+            ?.uppercase()
     }
 }

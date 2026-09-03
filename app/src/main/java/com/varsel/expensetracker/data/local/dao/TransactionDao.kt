@@ -173,7 +173,9 @@ interface TransactionDao {
                         THEN 'TRANSFER_IN'
 
                     ELSE role
-                END
+                END,
+
+            category = 'Transfer'
         WHERE id IN (
             :transferOutTransactionId,
             :transferInTransactionId
@@ -327,4 +329,89 @@ interface TransactionDao {
             Long
     ):
         List<TransactionEntity>
+
+    //--------------------------------------------------
+    // Bulk update transactions
+    //--------------------------------------------------
+
+    @Update
+    suspend fun updateTransactions(
+        transactions: List<TransactionEntity>
+    )
+
+    //--------------------------------------------------
+    // Similarity search query
+    //--------------------------------------------------
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE id != :excludeId
+        AND dateTimestamp >= :sinceTimestamp
+        ORDER BY dateTimestamp DESC
+        """
+    )
+    suspend fun getTransactionsSince(
+        excludeId: Long,
+        sinceTimestamp: Long
+    ): List<TransactionEntity>
+
+    //--------------------------------------------------
+    // Transfer Candidate Queries
+    //--------------------------------------------------
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE transferLinkId IS NULL
+        AND type = :type
+        AND amount = :amount
+        AND dateTimestamp BETWEEN :minDate AND :maxDate
+        ORDER BY dateTimestamp ASC
+        """
+    )
+    suspend fun findUnlinkedTransferCandidates(
+        type: String,
+        amount: Double,
+        minDate: Long,
+        maxDate: Long
+    ): List<TransactionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE transferLinkId IS NULL
+        AND type = :type
+        AND referenceNumber IS NOT NULL
+        AND referenceNumber = :referenceNumber
+        LIMIT 5
+        """
+    )
+    suspend fun findUnlinkedTransferCandidatesByReference(
+        type: String,
+        referenceNumber: String
+    ): List<TransactionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE id IN (:ids)
+        """
+    )
+    suspend fun getTransactionsByIds(ids: List<Long>): List<TransactionEntity>
+
+    @Query(
+        """
+        SELECT *
+        FROM transactions
+        WHERE transferLinkId IS NULL
+        ORDER BY dateTimestamp DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getRecentUnlinkedTransactions(limit: Int = 200): List<TransactionEntity>
 }

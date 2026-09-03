@@ -12,6 +12,9 @@ data class CategoryUi(
 ) {
     val icon: ImageVector
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         get() {
             CategoryIconCatalog.getCategory(id)?.let { entity ->
                 val matchingIcon = CategoryIconCatalog.availableIcons.firstOrNull { it.key.equals(entity.iconName, ignoreCase = true) }
@@ -19,9 +22,12 @@ data class CategoryUi(
             }
             return CategoryIconCatalog.iconFor(id.ifBlank { iconKey })
         }
+<<<<<<< HEAD
 =======
         get() = CategoryIconCatalog.iconFor(iconKey.ifBlank { id })
 >>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
+=======
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
 
     val color: Color
         get() = CategoryPalette.colorFor(id)
@@ -32,8 +38,12 @@ object CategoryMetadata {
     val expenseCategories = listOf(
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
+=======
+        CategoryUi(Category.HOUSING, CategoryIconCatalog.HOME),
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         CategoryUi(Category.FOOD, CategoryIconCatalog.FOOD),
         CategoryUi(Category.GROCERIES, CategoryIconCatalog.GROCERIES),
         CategoryUi(Category.FUEL_AND_TRANSPORT, CategoryIconCatalog.TRAVEL),

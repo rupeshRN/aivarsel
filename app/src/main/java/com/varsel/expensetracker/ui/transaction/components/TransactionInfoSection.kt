@@ -25,6 +25,7 @@ import java.util.Locale
 @Composable
 fun TransactionInfoSection(
 <<<<<<< HEAD
+<<<<<<< HEAD
     transaction: Transaction,
     modifier: Modifier = Modifier
 ) {
@@ -41,6 +42,17 @@ fun TransactionInfoSection(
     modifier: Modifier = Modifier
 ) {
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+    transaction: Transaction,
+    modifier: Modifier = Modifier
+) {
+    val dateFormat = SimpleDateFormat("dd MMMM yyyy, hh:mm a", Locale.ENGLISH)
+    val formattedDate = dateFormat.format(Date(transaction.dateTimestamp))
+
+    val reference = transaction.referenceNumber?.takeIf { it.isNotBlank() } ?: "Not available"
+    val source = if (transaction.referenceNumber.isNullOrBlank()) "Manual Entry" else "Bank Statement Import"
+
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -103,20 +115,42 @@ fun TransactionInfoSection(
                 thickness = 1.dp
             )
 
+            val bankNameDisplay = com.varsel.expensetracker.util.BankInfoHelper.resolveBankName(transaction)
+            val bankValue = if (!transaction.accountLast4.isNullOrBlank()) {
+                "$bankNameDisplay (•••• ${transaction.accountLast4})"
+            } else {
+                bankNameDisplay
+            }
+
             InfoRow(
-                title = "Amount",
-                value = amount,
+                title = "Bank Name",
+                value = bankValue,
                 isEmphasized = true
             )
 
             InfoRow(
-                title = "Date",
-                value = date
+                title = "Date & Time",
+                value = formattedDate
             )
 
             InfoRow(
-                title = "Type",
-                value = type
+                title = "Source",
+                value = source
+            )
+
+            InfoRow(
+                title = "Reference / UTR",
+                value = reference
+            )
+
+            InfoRow(
+                title = "Transaction ID",
+                value = "#TX-${transaction.id}"
+            )
+
+            InfoRow(
+                title = "Ledger Status",
+                value = "Settled & Verified"
             )
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
         }
@@ -150,6 +184,10 @@ private fun InfoRow(
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)

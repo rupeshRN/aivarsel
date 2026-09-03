@@ -123,12 +123,21 @@ fun StatementUploadHeroCard(
                 )
                 FormatBadge(
                     icon = Icons.Default.ReceiptLong,
+<<<<<<< HEAD
                     label = "Indian Bank • ICICI",
                     enabled = true
                 )
                 FormatBadge(
                     icon = Icons.Default.Image,
                     label = "HDFC (Coming Next)",
+=======
+                    label = "Indian Bank • ICICI • HDFC",
+                    enabled = true
+                )
+                FormatBadge(
+                    icon = Icons.Default.ReceiptLong,
+                    label = "Other banks soon",
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                     enabled = false
                 )
             }

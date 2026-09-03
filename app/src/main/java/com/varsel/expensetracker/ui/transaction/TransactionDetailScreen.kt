@@ -1,6 +1,13 @@
 package com.varsel.expensetracker.ui.transaction
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33,7 +42,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +58,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -88,7 +104,8 @@ fun TransactionDetailScreen(
     val scrollState = rememberScrollState()
 
     var showSaveConfirmDialog by remember { mutableStateOf(false) }
-    var rememberSmartRule by remember { mutableStateOf(true) }
+    var rememberSmartRule by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
@@ -159,6 +176,9 @@ fun TransactionDetailScreen(
                         }
                     },
                     onSaveClick = {
+                        rememberSmartRule = false
+                        viewModel.setApplyToSimilar(false)
+                        viewModel.prepareSaveSmartRuleDialog()
                         showSaveConfirmDialog = true
                     },
                     saveEnabled = state.hasChanges && !state.isSaving,
@@ -203,6 +223,16 @@ fun TransactionDetailScreen(
 <<<<<<< HEAD
 <<<<<<< HEAD
                     val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
+                    val isTransfer = state.selectedRole == TransactionRole.TRANSFER_IN || state.selectedRole == TransactionRole.TRANSFER_OUT
+
+                    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+                    val headerColor = when {
+                        isTransfer -> if (isDark) Color(0xFFD1C4E9) else Color(0xFF5E35B1)
+                        isIncome -> if (isDark) Color(0xFF66BB6A) else Color(0xFF2E7D32)
+                        else -> if (isDark) Color(0xFFFF5252) else Color(0xFFC62828)
+                    }
+
+                    val typeLabel = if (isTransfer) "(Transfer)" else transaction.type.name
 
                     // Hero Transaction Header Card
                     Surface(
@@ -224,7 +254,7 @@ fun TransactionDetailScreen(
                             Text(
                                 text = (if (isIncome) "+ ₹" else "- ₹") + "%,.2f".format(kotlin.math.abs(transaction.amount)),
                                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                                color = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)
+                                color = headerColor
                             )
 
                             Row(
@@ -233,12 +263,12 @@ fun TransactionDetailScreen(
                             ) {
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
-                                    color = (if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)).copy(alpha = 0.12f)
+                                    color = headerColor.copy(alpha = 0.12f)
                                 ) {
                                     Text(
-                                        text = transaction.type.name,
+                                        text = typeLabel,
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828),
+                                        color = headerColor,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                     )
                                 }
@@ -432,12 +462,16 @@ fun TransactionDetailScreen(
                     // Transaction Information
                     TransactionInfoSection(
 <<<<<<< HEAD
+<<<<<<< HEAD
                         transaction = transaction
 =======
                         amount = "₹%.2f".format(transaction.amount),
                         date = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(Date(transaction.dateTimestamp)),
                         type = transaction.type.name
 >>>>>>> e822426 (feat: enhance category metadata and transaction logic)
+=======
+                        transaction = transaction
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                     )
 
                     Spacer(modifier = Modifier.padding(bottom = 24.dp))
@@ -447,7 +481,42 @@ fun TransactionDetailScreen(
     }
 
     //--------------------------------------------------
-    // Save Confirmation Dialog (with Smart Rule toggle)
+    // Date Picker Dialog for Custom Cutoff Date
+    //--------------------------------------------------
+    if (showDatePicker) {
+        val state = uiState as? TransactionDetailUiState.Loaded
+        val initialDateMillis = state?.customCutoffTimestamp ?: System.currentTimeMillis()
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = initialDateMillis
+        )
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val pickedMillis = datePickerState.selectedDateMillis
+                        if (pickedMillis != null) {
+                            viewModel.setPastTimeframe(PastTimeframe.CUSTOM, pickedMillis)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    //--------------------------------------------------
+    // Save Confirmation Dialog (with Smart Rule toggle & Bulk Apply)
     //--------------------------------------------------
     if (showSaveConfirmDialog) {
         val state = uiState as? TransactionDetailUiState.Loaded
@@ -464,23 +533,19 @@ fun TransactionDetailScreen(
                 },
                 title = {
                     Text(
-                        text = "Save Transaction Changes?",
+                        text = "Save & Smart Rule",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )
                 },
                 text = {
                     Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "You are about to save changes for this transaction.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(
@@ -495,46 +560,235 @@ fun TransactionDetailScreen(
                                 Text(
                                     text = "Category: ${state.selectedCategory}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
 
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                        // Future Smart Rule Toggle
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .padding(vertical = 4.dp)
+                                .clickable { rememberSmartRule = !rememberSmartRule }
+                                .padding(vertical = 4.dp, horizontal = 2.dp)
                         ) {
                             Checkbox(
                                 checked = rememberSmartRule,
                                 onCheckedChange = { rememberSmartRule = it }
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Learn for future imports",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = "Auto-rename & categorize matching bank narrations",
+                                    text = "Auto-rename & categorize future bank imports",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                        // Past Transactions Bulk Apply Toggle
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { viewModel.setApplyToSimilar(!state.applyToSimilarTransactions) }
+                                .padding(vertical = 4.dp, horizontal = 2.dp)
+                        ) {
+                            Checkbox(
+                                checked = state.applyToSimilarTransactions,
+                                onCheckedChange = { viewModel.setApplyToSimilar(it) }
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Apply to similar past transactions",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Update existing transactions up to selected date",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        // Retroactive Filter / Date Configuration Card
+                        AnimatedVisibility(
+                            visible = state.applyToSimilarTransactions,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    // Match Count Banner
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        if (state.isLoadingSimilar) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(16.dp),
+                                                strokeWidth = 2.dp
+                                            )
+                                            Text(
+                                                text = "Searching past transactions...",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Outlined.History,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Text(
+                                                text = "${state.similarTransactionsCount} matching transactions found",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "Apply to transactions from:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+
+                                    // Timeframe Filter Chips
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .horizontalScroll(rememberScrollState()),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        PastTimeframe.entries.forEach { timeframe ->
+                                            val isSelected = state.selectedPastTimeframe == timeframe
+                                            val chipLabel = when (timeframe) {
+                                                PastTimeframe.ALL_TIME -> "All Past"
+                                                PastTimeframe.LAST_30_DAYS -> "30 Days"
+                                                PastTimeframe.LAST_90_DAYS -> "3 Months"
+                                                PastTimeframe.LAST_180_DAYS -> "6 Months"
+                                                PastTimeframe.CUSTOM -> {
+                                                    if (isSelected && state.customCutoffTimestamp != null) {
+                                                        "Since " + SimpleDateFormat("dd MMM", Locale.getDefault()).format(Date(state.customCutoffTimestamp))
+                                                    } else {
+                                                        "Custom Date..."
+                                                    }
+                                                }
+                                            }
+
+                                            FilterChip(
+                                                selected = isSelected,
+                                                onClick = {
+                                                    if (timeframe == PastTimeframe.CUSTOM) {
+                                                        showDatePicker = true
+                                                    } else {
+                                                        viewModel.setPastTimeframe(timeframe)
+                                                    }
+                                                },
+                                                label = {
+                                                    Text(
+                                                        text = chipLabel,
+                                                        style = MaterialTheme.typography.labelSmall
+                                                    )
+                                                },
+                                                trailingIcon = if (timeframe == PastTimeframe.CUSTOM) {
+                                                    {
+                                                        Icon(
+                                                            imageVector = Icons.Outlined.CalendarMonth,
+                                                            contentDescription = "Pick date",
+                                                            modifier = Modifier.size(14.dp)
+                                                        )
+                                                    }
+                                                } else null
+                                            )
+                                        }
+                                    }
+
+                                    if (state.similarTransactionsCount > 0) {
+                                        Text(
+                                            text = "Will update category to \"${state.selectedCategory}\" for ${state.similarTransactionsCount} past transactions.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+
+                                        if (state.editableDescription != state.transaction.description && state.editableDescription.isNotBlank()) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .clickable { viewModel.setUpdateDescriptionForSimilar(!state.updateDescriptionForSimilar) }
+                                                    .padding(vertical = 2.dp)
+                                            ) {
+                                                Checkbox(
+                                                    checked = state.updateDescriptionForSimilar,
+                                                    onCheckedChange = { viewModel.setUpdateDescriptionForSimilar(it) }
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = "Also update description to \"${state.editableDescription}\"",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
+                                        }
+                                    } else if (!state.isLoadingSimilar) {
+                                        Text(
+                                            text = "No other matching past transactions found in this timeframe.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 confirmButton = {
+                    val updateCount = if (state.applyToSimilarTransactions) state.similarTransactionsCount + 1 else 1
+                    val buttonText = if (state.applyToSimilarTransactions && state.similarTransactionsCount > 0) {
+                        "Save & Update ($updateCount)"
+                    } else {
+                        "Save"
+                    }
+
                     Button(
                         onClick = {
                             showSaveConfirmDialog = false
-                            viewModel.saveChanges(createSmartRule = rememberSmartRule)
+                            viewModel.saveChanges(
+                                createSmartRule = rememberSmartRule,
+                                applyToSimilar = state.applyToSimilarTransactions,
+                                updateDescriptionForSimilar = state.updateDescriptionForSimilar
+                            )
                         }
                     ) {
-                        Text("Save")
+                        Text(buttonText)
                     }
                 },
                 dismissButton = {

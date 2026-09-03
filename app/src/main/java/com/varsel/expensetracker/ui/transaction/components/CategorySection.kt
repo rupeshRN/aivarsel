@@ -55,6 +55,7 @@ fun CategorySection(
 <<<<<<< HEAD
 
     val displayCategories = remember(transactionType, availableCategories, selectedCategory) {
+<<<<<<< HEAD
         val dynamicCategoryUis = availableCategories.map { name ->
             CategoryUi(id = name, isIncome = isIncome)
         }
@@ -81,14 +82,19 @@ fun CategorySection(
 =======
     val displayCategories = remember(transactionType, availableCategories, selectedCategory) {
         val staticCategories = CategoryMetadata.categoriesFor(transactionType)
+=======
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         val dynamicCategoryUis = availableCategories.map { name ->
-            CategoryUi(id = name, iconKey = name, isIncome = isIncome)
+            CategoryUi(id = name, isIncome = isIncome)
+        }
+        val staticCategories = CategoryMetadata.categoriesFor(transactionType).map {
+            CategoryUi(id = it.id, isIncome = isIncome)
         }
 
-        val combined = (staticCategories + dynamicCategoryUis).distinctBy { it.id.lowercase() }.toMutableList()
+        val combined = (dynamicCategoryUis + staticCategories).distinctBy { it.id.lowercase() }.toMutableList()
 
         if (selectedCategory.isNotBlank() && combined.none { it.id.equals(selectedCategory, ignoreCase = true) }) {
-            combined.add(CategoryUi(selectedCategory, selectedCategory, isIncome = isIncome))
+            combined.add(CategoryUi(selectedCategory, isIncome = isIncome))
         }
         combined
 >>>>>>> e822426 (feat: enhance category metadata and transaction logic)
@@ -103,12 +109,16 @@ fun CategorySection(
 
     Column(
 <<<<<<< HEAD
+<<<<<<< HEAD
         modifier = Modifier.fillMaxWidth(),
 =======
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(),
 >>>>>>> 740f58d (refactor(category): consolidate categories and migrate to vector icons)
+=======
+        modifier = Modifier.fillMaxWidth(),
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Collapsible Header - Standardized title without extraneous leading icon

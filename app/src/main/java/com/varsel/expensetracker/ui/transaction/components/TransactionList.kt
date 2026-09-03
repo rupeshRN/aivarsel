@@ -41,10 +41,14 @@ fun LazyListScope.transactionList(
         }
     } else {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         items(
             items = transactions,
             key = { it.id }
         ) { item ->
+<<<<<<< HEAD
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -63,18 +67,21 @@ fun LazyListScope.transactionList(
                 )
 =======
         item(key = "transactions_container") {
+=======
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
                 border = BorderStroke(
                     1.dp,
-                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
                 )
             ) {
+<<<<<<< HEAD
                 Column(
                     modifier = Modifier.padding(vertical = 6.dp)
                 ) {
@@ -94,6 +101,12 @@ fun LazyListScope.transactionList(
                     }
                 }
 >>>>>>> de06015 (ui: enhance visual contrast and category filtering)
+=======
+                RecentTransactionCard(
+                    transaction = item,
+                    onClick = { onTransactionClick(item) }
+                )
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
             }
         }
     }

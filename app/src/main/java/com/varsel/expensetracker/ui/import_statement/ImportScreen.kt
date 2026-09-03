@@ -38,6 +38,10 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -271,6 +275,13 @@ fun ImportScreen(
                 //--------------------------------------------------
                 is ImportUiState.PasswordRequired -> {
                     PasswordRequiredContent(
+<<<<<<< HEAD
+=======
+                        state = uiState as ImportUiState.PasswordRequired,
+                        onSubmitPassword = { pwd ->
+                            viewModel.submitPassword(pwd)
+                        },
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                         onDismiss = {
                             viewModel.resetState()
                         }
@@ -626,16 +637,31 @@ private fun ErrorImportContent(
 
 @Composable
 private fun PasswordRequiredContent(
+<<<<<<< HEAD
     onDismiss: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
+=======
+    state: ImportUiState.PasswordRequired,
+    onSubmitPassword: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
         contentAlignment = Alignment.Center
     ) {
         Card(
             shape = RoundedCornerShape(24.dp),
+<<<<<<< HEAD
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -658,10 +684,53 @@ private fun PasswordRequiredContent(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Password protected documents are currently not supported for automated local parsing. Please export an unlocked statement copy and try again.",
+=======
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("password_required_card")
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(60.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Lock Icon",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Text(
+                    text = "Password Protected PDF",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(
+                    text = "Enter statement password to unlock and parse transactions.",
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+<<<<<<< HEAD
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
                     onClick = onDismiss,
@@ -669,6 +738,100 @@ private fun PasswordRequiredContent(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("OK")
+=======
+
+                if (state.isInvalidPasswordError) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Incorrect password. Please try again.",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("PDF Password") },
+                    placeholder = { Text("Enter statement password") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("pdf_password_input"),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                            )
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "💡 Common Bank Password Formats:",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "• HDFC: Customer ID (e.g. 12345678) or First 4 letters of Name (CAPS) + DDMM (e.g. NAVE0109)\n• ICICI: First 4 letters of Name + DDMM\n• SBI / Indian Bank: Account Number or DOB (DDMMYY)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cancel")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (password.isNotBlank()) {
+                                onSubmitPassword(password)
+                            }
+                        },
+                        enabled = password.isNotBlank(),
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .testTag("unlock_pdf_button"),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Unlock & Import")
+                    }
+>>>>>>> ad6b817 (major auto link transfer and hdfc aupport)
                 }
             }
         }
