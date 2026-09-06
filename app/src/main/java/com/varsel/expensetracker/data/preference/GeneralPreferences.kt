@@ -28,7 +28,7 @@ enum class BiometricTimeout(val label: String, val timeoutMillis: Long) {
 
     companion object {
         fun fromName(name: String?): BiometricTimeout {
-            return entries.firstOrNull { it.name == name } ?: AFTER_5_MIN
+            return entries.firstOrNull { it.name == name } ?: OFF
         }
     }
 }
@@ -65,7 +65,7 @@ enum class HomeSection(val id: String, val displayName: String, val description:
 }
 
 data class GeneralConfig(
-    val biometricTimeout: BiometricTimeout = BiometricTimeout.AFTER_5_MIN,
+    val biometricTimeout: BiometricTimeout = BiometricTimeout.OFF,
     val lastActiveTimestamp: Long = 0L,
     val activeHomeSections: List<String> = HomeSection.DEFAULT_ACTIVE,
     val navigationTabs: List<String> = listOf("home", "transactions", "reports", "more"),
@@ -93,9 +93,24 @@ class GeneralPreferencesRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
+    fun getBiometricTimeoutSync(): BiometricTimeout {
+        val prefs = context.getSharedPreferences("security_fast_prefs", Context.MODE_PRIVATE)
+        val name = prefs.getString("biometric_timeout", null)
+        return if (name != null) {
+            BiometricTimeout.fromName(name)
+        } else {
+            BiometricTimeout.OFF
+        }
+    }
+
     val generalConfig: Flow<GeneralConfig> = context.generalDataStore.data.map { prefs ->
-        val timeoutStr = prefs[GeneralPreferenceKeys.BIOMETRIC_TIMEOUT] ?: BiometricTimeout.AFTER_5_MIN.name
+        val timeoutStr = prefs[GeneralPreferenceKeys.BIOMETRIC_TIMEOUT] ?: BiometricTimeout.OFF.name
         val timeout = BiometricTimeout.fromName(timeoutStr)
+        // Keep fast prefs in sync
+        context.getSharedPreferences("security_fast_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putString("biometric_timeout", timeout.name)
+            .apply()
 
         val lastActive = prefs[GeneralPreferenceKeys.LAST_ACTIVE_TIMESTAMP] ?: 0L
 
@@ -133,6 +148,10 @@ class GeneralPreferencesRepository @Inject constructor(
     }
 
     suspend fun setBiometricTimeout(timeout: BiometricTimeout) {
+        context.getSharedPreferences("security_fast_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putString("biometric_timeout", timeout.name)
+            .apply()
         context.generalDataStore.edit { prefs ->
             prefs[GeneralPreferenceKeys.BIOMETRIC_TIMEOUT] = timeout.name
         }
