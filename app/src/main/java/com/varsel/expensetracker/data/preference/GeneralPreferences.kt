@@ -36,20 +36,19 @@ enum class BiometricTimeout(val label: String, val timeoutMillis: Long) {
 enum class HomeSection(val id: String, val displayName: String, val description: String) {
     BANNER("BANNER", "Homepage Banner", "Greeting and financial status banner"),
     NET_WORTH("NET_WORTH", "Net Worth", "Overall net worth and balance card"),
+    ACCOUNTS_LIST("ACCOUNTS_LIST", "Accounts List", "Overview of linked bank, cash and card accounts"),
     QUICK_ACTIONS("QUICK_ACTIONS", "Quick Actions", "Import, manual entry and analytics shortcuts"),
     TRANSACTIONS("TRANSACTIONS", "Transactions List", "Recent transaction history with quick view"),
     INSIGHTS("INSIGHTS", "Actionable Insights", "Smart spending flags and advisory tips"),
     LOANS("LOANS", "Loans & Liabilities", "Active loans and upcoming EMI schedule"),
     BUDGETS("BUDGETS", "Budgets", "Monthly category and total spending caps progress"),
-    INCOME_EXPENSE("INCOME_EXPENSE", "Income & Expenses", "Comparative cashflow summary"),
-    TRENDS_GRAPH("TRENDS_GRAPH", "Line Graph", "Monthly spending trends visualization"),
-    ACCOUNTS_LIST("ACCOUNTS_LIST", "Accounts List", "Overview of cash, bank and card accounts"),
     GOALS("GOALS", "Goals", "Savings targets and milestones tracker");
 
     companion object {
         val DEFAULT_ACTIVE = listOf(
             BANNER.id,
             NET_WORTH.id,
+            ACCOUNTS_LIST.id,
             QUICK_ACTIONS.id,
             INSIGHTS.id,
             LOANS.id,
@@ -72,8 +71,9 @@ data class GeneralConfig(
     val floatingNavBar: Boolean = false,
     val showNavLabels: Boolean = true,
     val netWorthWidgetPeriod: String = "All Time",
-    val incomeExpenseWidgetPeriod: String = "This Month",
-    val budgetWidgetCategory: String = "Food"
+    val budgetWidgetCategory: String = "Food",
+    val homeBudgetsSelection: String = "ALL",
+    val homeGoalsSelection: String = "ALL"
 )
 
 object GeneralPreferenceKeys {
@@ -84,8 +84,9 @@ object GeneralPreferenceKeys {
     val FLOATING_NAV_BAR = booleanPreferencesKey("floating_nav_bar")
     val SHOW_NAV_LABELS = booleanPreferencesKey("show_nav_labels")
     val NET_WORTH_WIDGET_PERIOD = stringPreferencesKey("net_worth_widget_period")
-    val INCOME_EXPENSE_WIDGET_PERIOD = stringPreferencesKey("income_expense_widget_period")
     val BUDGET_WIDGET_CATEGORY = stringPreferencesKey("budget_widget_category")
+    val HOME_BUDGETS_SELECTION = stringPreferencesKey("home_budgets_selection")
+    val HOME_GOALS_SELECTION = stringPreferencesKey("home_goals_selection")
 }
 
 @Singleton
@@ -116,7 +117,9 @@ class GeneralPreferencesRepository @Inject constructor(
 
         val sectionsRaw = prefs[GeneralPreferenceKeys.ACTIVE_HOME_SECTIONS]
         val activeSections = if (!sectionsRaw.isNullOrBlank()) {
-            sectionsRaw.split(",").filter { it.isNotBlank() }
+            sectionsRaw.split(",")
+                .map { it.trim() }
+                .filter { it.isNotBlank() && HomeSection.findById(it) != null }
         } else {
             HomeSection.DEFAULT_ACTIVE
         }
@@ -131,8 +134,9 @@ class GeneralPreferencesRepository @Inject constructor(
         val floatingBar = prefs[GeneralPreferenceKeys.FLOATING_NAV_BAR] ?: false
         val showLabels = prefs[GeneralPreferenceKeys.SHOW_NAV_LABELS] ?: true
         val nwPeriod = prefs[GeneralPreferenceKeys.NET_WORTH_WIDGET_PERIOD] ?: "All Time"
-        val iePeriod = prefs[GeneralPreferenceKeys.INCOME_EXPENSE_WIDGET_PERIOD] ?: "This Month"
         val budgetCat = prefs[GeneralPreferenceKeys.BUDGET_WIDGET_CATEGORY] ?: "Food"
+        val homeBudgets = prefs[GeneralPreferenceKeys.HOME_BUDGETS_SELECTION] ?: "ALL"
+        val homeGoals = prefs[GeneralPreferenceKeys.HOME_GOALS_SELECTION] ?: "ALL"
 
         GeneralConfig(
             biometricTimeout = timeout,
@@ -142,8 +146,9 @@ class GeneralPreferencesRepository @Inject constructor(
             floatingNavBar = floatingBar,
             showNavLabels = showLabels,
             netWorthWidgetPeriod = nwPeriod,
-            incomeExpenseWidgetPeriod = iePeriod,
-            budgetWidgetCategory = budgetCat
+            budgetWidgetCategory = budgetCat,
+            homeBudgetsSelection = homeBudgets,
+            homeGoalsSelection = homeGoals
         )
     }
 
@@ -195,15 +200,21 @@ class GeneralPreferencesRepository @Inject constructor(
         }
     }
 
-    suspend fun setIncomeExpenseWidgetPeriod(period: String) {
-        context.generalDataStore.edit { prefs ->
-            prefs[GeneralPreferenceKeys.INCOME_EXPENSE_WIDGET_PERIOD] = period
-        }
-    }
-
     suspend fun setBudgetWidgetCategory(category: String) {
         context.generalDataStore.edit { prefs ->
             prefs[GeneralPreferenceKeys.BUDGET_WIDGET_CATEGORY] = category
+        }
+    }
+
+    suspend fun setHomeBudgetsSelection(selection: String) {
+        context.generalDataStore.edit { prefs ->
+            prefs[GeneralPreferenceKeys.HOME_BUDGETS_SELECTION] = selection
+        }
+    }
+
+    suspend fun setHomeGoalsSelection(selection: String) {
+        context.generalDataStore.edit { prefs ->
+            prefs[GeneralPreferenceKeys.HOME_GOALS_SELECTION] = selection
         }
     }
 }
