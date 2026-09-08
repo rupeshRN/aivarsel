@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -119,22 +120,69 @@ class DashboardViewModel @Inject constructor(
                 val totalGoalTarget = visibleGoals.sumOf { it.budget.amount }
                 val totalGoalSaved = visibleGoals.sumOf { it.amountSpent }
 
-                _uiState.value = baseDashboard.copy(
-                    loans = loans,
-                    insights = insights,
-                    allBudgets = expenseBudgets,
-                    allGoals = savingsGoals,
-                    visibleBudgets = visibleBudgets,
-                    visibleGoals = visibleGoals,
-                    homeBudgetsSelection = homeBudgetsSelection,
-                    homeGoalsSelection = homeGoalsSelection,
-                    totalBudgetLimit = totalBudgetLimit,
-                    totalBudgetSpent = totalBudgetSpent,
-                    totalGoalTarget = totalGoalTarget,
-                    totalGoalSaved = totalGoalSaved
-                )
+                val rawAccounts = baseDashboard.balanceSummary.accounts
+                val configuredAccounts = if (generalConfig.pinnedAccounts.isNotEmpty()) {
+                    val pinned = generalConfig.pinnedAccounts
+                    val matched = rawAccounts.filter { acc ->
+                        pinned.any { p ->
+                            p.equals(acc.bankShortName, ignoreCase = true) ||
+                            p.equals(acc.bankName, ignoreCase = true) ||
+                            acc.accountDisplayName.contains(p, ignoreCase = true)
+                        }
+                    }
+                    val listToOrder = if (matched.isNotEmpty()) matched else rawAccounts
+                    if (generalConfig.primaryAccount != "First Select" && generalConfig.primaryAccount.isNotBlank()) {
+                        val primary = generalConfig.primaryAccount
+                        listToOrder.sortedByDescending { acc ->
+                            primary.equals(acc.bankShortName, ignoreCase = true) ||
+                            primary.equals(acc.bankName, ignoreCase = true) ||
+                            acc.accountDisplayName.contains(primary, ignoreCase = true)
+                        }
+                    } else {
+                        listToOrder.sortedBy { acc ->
+                            val idx = pinned.indexOfFirst { p ->
+                                p.equals(acc.bankShortName, ignoreCase = true) ||
+                                p.equals(acc.bankName, ignoreCase = true) ||
+                                acc.accountDisplayName.contains(p, ignoreCase = true)
+                            }
+                            if (idx >= 0) idx else 999
+                        }
+                    }
+                } else {
+                    rawAccounts
+                }
+
+                val recentTxns = when (generalConfig.homeTransactionsFilter) {
+                    "EXPENSE" -> baseDashboard.recentTransactions.filter { !it.isIncome }
+                    "INCOME" -> baseDashboard.recentTransactions.filter { it.isIncome }
+                    else -> baseDashboard.recentTransactions
+                }.take(if (generalConfig.homeTransactionsCount > 0) generalConfig.homeTransactionsCount else 5)
+
+                _uiState.update { current ->
+                    baseDashboard.copy(
+                        balanceSummary = baseDashboard.balanceSummary.copy(accounts = configuredAccounts),
+                        recentTransactions = recentTxns,
+                        loans = loans,
+                        insights = insights,
+                        allBudgets = expenseBudgets,
+                        allGoals = savingsGoals,
+                        visibleBudgets = visibleBudgets,
+                        visibleGoals = visibleGoals,
+                        homeBudgetsSelection = homeBudgetsSelection,
+                        homeGoalsSelection = homeGoalsSelection,
+                        totalBudgetLimit = totalBudgetLimit,
+                        totalBudgetSpent = totalBudgetSpent,
+                        totalGoalTarget = totalGoalTarget,
+                        totalGoalSaved = totalGoalSaved,
+                        isBalanceHidden = current.isBalanceHidden
+                    )
+                }
             }.collect {}
         }
+    }
+
+    fun toggleBalanceVisibility() {
+        _uiState.update { it.copy(isBalanceHidden = !it.isBalanceHidden) }
     }
 
     fun setHomeBudgetsSelection(selection: String) {

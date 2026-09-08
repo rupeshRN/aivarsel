@@ -1,5 +1,8 @@
 package com.varsel.expensetracker.ui.dashboard
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +42,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel,
     onNavigateToAllTransactions: () -> Unit,
     onNavigateToImport: () -> Unit = {},
+    onNavigateToImportWithUri: (Uri) -> Unit = {},
     onNavigateToAnalytics: () -> Unit = {},
     onNavigateToTransactionDetail: (Long) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
@@ -48,6 +52,14 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val activeSections by viewModel.activeHomeSections.collectAsStateWithLifecycle()
     var featureDialog by remember { mutableStateOf<FeatureDialogState>(FeatureDialogState.None) }
+
+    val statementPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            onNavigateToImportWithUri(selectedUri)
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -78,7 +90,9 @@ fun DashboardScreen(
                         HomeSection.NET_WORTH.id -> {
                             item(key = "balance_card") {
                                 BalanceCard(
-                                    summary = uiState.balanceSummary
+                                    summary = uiState.balanceSummary,
+                                    isBalanceHidden = uiState.isBalanceHidden,
+                                    onToggleVisibility = { viewModel.toggleBalanceVisibility() }
                                 )
                             }
                         }
@@ -86,7 +100,9 @@ fun DashboardScreen(
                         HomeSection.QUICK_ACTIONS.id -> {
                             item(key = "quick_actions") {
                                 QuickActionBar(
-                                    onImportClick = onNavigateToImport,
+                                    onImportClick = {
+                                        statementPickerLauncher.launch(arrayOf("application/pdf", "image/*"))
+                                    },
                                     onAddTransactionClick = {
                                         featureDialog = FeatureDialogState.UnderDevelopment(
                                             title = "Manual Entry In Development",
@@ -154,7 +170,8 @@ fun DashboardScreen(
                         HomeSection.ACCOUNTS_LIST.id -> {
                             item(key = "accounts_widget") {
                                 DashboardAccountsWidget(
-                                    snapshots = uiState.balanceSummary.accounts
+                                    snapshots = uiState.balanceSummary.accounts,
+                                    isBalanceHidden = uiState.isBalanceHidden
                                 )
                             }
                         }
