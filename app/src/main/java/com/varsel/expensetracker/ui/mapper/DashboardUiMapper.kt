@@ -104,52 +104,59 @@ class DashboardUiMapper @Inject constructor(
                 periodDisplayName = "All Time"
             }
             normalizedPeriod.contains("year") -> {
-                val cal = Calendar.getInstance().apply {
-                    set(Calendar.MONTH, Calendar.JANUARY)
-                    set(Calendar.DAY_OF_MONTH, 1)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                val startOfYear = cal.timeInMillis
-                cal.add(Calendar.YEAR, -1)
-                val startOfPrevYear = cal.timeInMillis
+                val startOfYear = calendarAtStartOfMonth(anchorYear, Calendar.JANUARY)
+                val startOfNextYear = calendarAtStartOfMonth(anchorYear + 1, Calendar.JANUARY)
+                val startOfPrevYear = calendarAtStartOfMonth(anchorYear - 1, Calendar.JANUARY)
 
-                targetTransactions = transactions.filter { it.dateTimestamp >= startOfYear }
-                previousPeriodTransactions = transactions.filter { it.dateTimestamp >= startOfPrevYear && it.dateTimestamp < startOfYear }
+                targetTransactions = transactions.filter {
+                    it.dateTimestamp >= startOfYear &&
+                        (if (anchorYear == currentYear) true else it.dateTimestamp < startOfNextYear)
+                }
+                previousPeriodTransactions = transactions.filter {
+                    it.dateTimestamp >= startOfPrevYear && it.dateTimestamp < startOfYear
+                }
                 periodDisplayName = "This Year"
             }
             normalizedPeriod.contains("6") -> {
-                val cal = Calendar.getInstance().apply {
-                    add(Calendar.MONTH, -6)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
+                val cal6 = Calendar.getInstance().apply {
+                    clear()
+                    set(Calendar.YEAR, anchorYear)
+                    set(Calendar.MONTH, anchorMonth)
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    add(Calendar.MONTH, -5)
                 }
-                val sixMonthsAgo = cal.timeInMillis
-                cal.add(Calendar.MONTH, -6)
-                val twelveMonthsAgo = cal.timeInMillis
+                val startOf6Months = cal6.timeInMillis
+                cal6.add(Calendar.MONTH, -6)
+                val startOfPrev6Months = cal6.timeInMillis
 
-                targetTransactions = transactions.filter { it.dateTimestamp >= sixMonthsAgo }
-                previousPeriodTransactions = transactions.filter { it.dateTimestamp >= twelveMonthsAgo && it.dateTimestamp < sixMonthsAgo }
+                targetTransactions = transactions.filter {
+                    it.dateTimestamp >= startOf6Months &&
+                        (if (anchorYear == currentYear && anchorMonth == currentMonth) true else it.dateTimestamp < nextMonthStart)
+                }
+                previousPeriodTransactions = transactions.filter {
+                    it.dateTimestamp >= startOfPrev6Months && it.dateTimestamp < startOf6Months
+                }
                 periodDisplayName = "Last 6 Months"
             }
             normalizedPeriod.contains("3") -> {
-                val cal = Calendar.getInstance().apply {
-                    add(Calendar.MONTH, -3)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
+                val cal3 = Calendar.getInstance().apply {
+                    clear()
+                    set(Calendar.YEAR, anchorYear)
+                    set(Calendar.MONTH, anchorMonth)
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    add(Calendar.MONTH, -2)
                 }
-                val threeMonthsAgo = cal.timeInMillis
-                cal.add(Calendar.MONTH, -3)
-                val sixMonthsAgo = cal.timeInMillis
+                val startOf3Months = cal3.timeInMillis
+                cal3.add(Calendar.MONTH, -3)
+                val startOfPrev3Months = cal3.timeInMillis
 
-                targetTransactions = transactions.filter { it.dateTimestamp >= threeMonthsAgo }
-                previousPeriodTransactions = transactions.filter { it.dateTimestamp >= sixMonthsAgo && it.dateTimestamp < threeMonthsAgo }
+                targetTransactions = transactions.filter {
+                    it.dateTimestamp >= startOf3Months &&
+                        (if (anchorYear == currentYear && anchorMonth == currentMonth) true else it.dateTimestamp < nextMonthStart)
+                }
+                previousPeriodTransactions = transactions.filter {
+                    it.dateTimestamp >= startOfPrev3Months && it.dateTimestamp < startOf3Months
+                }
                 periodDisplayName = "Last 3 Months"
             }
             else -> {

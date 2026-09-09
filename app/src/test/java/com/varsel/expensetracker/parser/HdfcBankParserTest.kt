@@ -217,8 +217,26 @@ class HdfcBankParserTest {
         assertEquals(5000.00, tx.amount, 0.001)
         assertEquals(TransactionType.EXPENSE, tx.type)
         assertEquals("18945", tx.referenceNumber)
-        org.junit.Assert.assertTrue("Description should include card ending: ${tx.description}", tx.description.contains("Card ending 1234"))
-        org.junit.Assert.assertTrue("Description should indicate ATM withdrawal: ${tx.description}", tx.description.contains("ATM"))
+        org.junit.Assert.assertFalse("Description should not include card ending: ${tx.description}", tx.description.contains("Card ending", ignoreCase = true))
+        assertEquals("ATM Cash Withdrawal", tx.description)
+        assertEquals(Category.TRANSFER, tx.category)
+    }
+
+    @Test
+    fun testAtwWithdrawalWithLocationInLastSegment() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            10/08/2026 ATW-00000000000018945-KODAMBAKKAM 00000000000018945 10/08/2026 5,000.00 15,000.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(5000.00, tx.amount, 0.001)
+        assertEquals(TransactionType.EXPENSE, tx.type)
+        assertEquals("18945", tx.referenceNumber)
+        assertEquals("ATM Withdrawal: Kodambakkam", tx.description)
         assertEquals(Category.TRANSFER, tx.category)
     }
 
@@ -275,8 +293,110 @@ class HdfcBankParserTest {
         val tx = transactions[0]
         // 123456XXXXXX1234 must NOT be classified as reference number
         org.junit.Assert.assertNull("Masked credit card number should not be referenceNumber", tx.referenceNumber)
-        // Must be used to build transaction description
-        org.junit.Assert.assertTrue("Description should include card ending: ${tx.description}", tx.description.contains("Card ending 1234"))
-        org.junit.Assert.assertTrue("Description should include merchant: ${tx.description}", tx.description.contains("Starbucks"))
+        org.junit.Assert.assertFalse("Description should not append card ending: ${tx.description}", tx.description.contains("Card ending", ignoreCase = true))
+        assertEquals("POS: Starbucks", tx.description)
+    }
+
+    @Test
+    fun testImpsCreditTransactionWithSenderAccountAndPurpose() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            16/08/2026 IMPS-423412345678-JOHN DOE-HDFC-XXXXXXXX0123-MONTHLY RENT 0000423412345678 16/08/2026 0.00 25,000.00 49,580.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(25000.00, tx.amount, 0.001)
+        assertEquals(TransactionType.INCOME, tx.type)
+        assertEquals("423412345678", tx.referenceNumber)
+        // Purpose is more than enough, no card ending suffix
+        assertEquals("Monthly Rent", tx.description)
+        org.junit.Assert.assertFalse("Description must not append card ending: ${tx.description}", tx.description.contains("Card ending", ignoreCase = true))
+    }
+
+    @Test
+    fun testAtwWithdrawalWithMaskedCardAndLocation() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            10/08/2026 ATW-416021XXXXXX1234-KODAMBAKKAM 00000000000018945 10/08/2026 5,000.00 15,000.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(5000.00, tx.amount, 0.001)
+        assertEquals(TransactionType.EXPENSE, tx.type)
+        assertEquals("18945", tx.referenceNumber)
+        assertEquals("ATM Withdrawal: Kodambakkam", tx.description)
+        assertEquals(Category.TRANSFER, tx.category)
+        org.junit.Assert.assertFalse(tx.description.contains("Card ending", ignoreCase = true))
+    }
+
+    @Test
+    fun testAtwWithdrawalWithSlashDelimiter() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            10/08/2026 ATW/00000000000018945/KODAMBAKKAM 00000000000018945 10/08/2026 5,000.00 15,000.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals("ATM Withdrawal: Kodambakkam", tx.description)
+        assertEquals(Category.TRANSFER, tx.category)
+    }
+
+    @Test
+    fun testImpsCreditWithLowercaseMaskedAccountAndPurpose() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            16/08/2026 IMPS-423412345678-JOHN DOE-HDFC-xxxx0123-MONTHLY RENT 0000423412345678 16/08/2026 0.00 25,000.00 49,580.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(25000.00, tx.amount, 0.001)
+        assertEquals(TransactionType.INCOME, tx.type)
+        assertEquals("423412345678", tx.referenceNumber)
+        assertEquals("Monthly Rent", tx.description)
+        org.junit.Assert.assertFalse("Description must not append card ending: ${tx.description}", tx.description.contains("Card ending", ignoreCase = true))
+        org.junit.Assert.assertFalse("Description must not include xxxx0123: ${tx.description}", tx.description.contains("0123"))
+    }
+
+    @Test
+    fun testImpsCreditWithoutPurposeShowsPartyNameCleanly() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            16/08/2026 IMPS-423412345678-JOHN DOE-HDFC-XXXXXXXX0123 0000423412345678 16/08/2026 0.00 25,000.00 49,580.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals("IMPS: John Doe", tx.description)
+        org.junit.Assert.assertFalse("Description must not append card ending: ${tx.description}", tx.description.contains("Card ending", ignoreCase = true))
+        org.junit.Assert.assertFalse("Description must not include 0123: ${tx.description}", tx.description.contains("0123"))
+    }
+
+    @Test
+    fun testImpsSlashDelimitedWithPurpose() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            16/08/2026 IMPS/423412345678/JOHN DOE/HDFC/XXXXXXXX0123/ROOM RENT 0000423412345678 16/08/2026 0.00 25,000.00 49,580.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals("Room Rent", tx.description)
+        org.junit.Assert.assertFalse(tx.description.contains("Card ending", ignoreCase = true))
     }
 }
