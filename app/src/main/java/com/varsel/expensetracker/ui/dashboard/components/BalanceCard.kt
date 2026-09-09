@@ -25,6 +25,7 @@ import kotlin.math.abs
 fun BalanceCard(
     summary: BalanceSummaryUiModel,
     isBalanceHidden: Boolean = false,
+    showBreakdown: Boolean = true,
     onToggleVisibility: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -76,7 +77,7 @@ fun BalanceCard(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "Net Liquid Balance",
@@ -85,6 +86,21 @@ fun BalanceCard(
                             letterSpacing = 0.5.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
                         )
+
+                        if (summary.periodLabel.isNotBlank()) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = summary.periodLabel,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
 
                     IconButton(
@@ -116,33 +132,35 @@ fun BalanceCard(
                     )
                 }
 
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
-                    thickness = 1.dp
-                )
-
-                // Monthly Income and Expense Pills with Strong Semantic Styling
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    IncomeExpensePill(
-                        modifier = Modifier.weight(1f),
-                        title = "Income",
-                        amount = summary.totalIncome,
-                        isIncome = true,
-                        isBalanceHidden = isBalanceHidden,
-                        changePercent = summary.incomeChangePercent
+                if (showBreakdown) {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                        thickness = 1.dp
                     )
 
-                    IncomeExpensePill(
-                        modifier = Modifier.weight(1f),
-                        title = "Expense",
-                        amount = summary.totalExpense,
-                        isIncome = false,
-                        isBalanceHidden = isBalanceHidden,
-                        changePercent = summary.expenseChangePercent
-                    )
+                    // Income and Expense Pills with Strong Semantic Styling
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        IncomeExpensePill(
+                            modifier = Modifier.weight(1f),
+                            title = "Income",
+                            amount = summary.totalIncome,
+                            isIncome = true,
+                            isBalanceHidden = isBalanceHidden,
+                            changePercent = summary.incomeChangePercent
+                        )
+
+                        IncomeExpensePill(
+                            modifier = Modifier.weight(1f),
+                            title = "Expense",
+                            amount = summary.totalExpense,
+                            isIncome = false,
+                            isBalanceHidden = isBalanceHidden,
+                            changePercent = summary.expenseChangePercent
+                        )
+                    }
                 }
             }
         }

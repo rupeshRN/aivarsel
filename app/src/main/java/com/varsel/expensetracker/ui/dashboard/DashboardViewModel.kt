@@ -120,7 +120,8 @@ class DashboardViewModel @Inject constructor(
                 val baseDashboard =
                     dashboardUiMapper.map(
                         transactions = transactions,
-                        snapshots = snapshots
+                        snapshots = snapshots,
+                        period = generalConfig.netWorthWidgetPeriod
                     )
 
                 val insights = if (appearanceConfig.actionableInsights) {
@@ -217,7 +218,8 @@ class DashboardViewModel @Inject constructor(
                         totalBudgetSpent = totalBudgetSpent,
                         totalGoalTarget = totalGoalTarget,
                         totalGoalSaved = totalGoalSaved,
-                        isBalanceHidden = current.isBalanceHidden
+                        isBalanceHidden = current.isBalanceHidden,
+                        showNetWorthBreakdown = generalConfig.showNetWorthBreakdown
                     )
                 }
             }.collect {}

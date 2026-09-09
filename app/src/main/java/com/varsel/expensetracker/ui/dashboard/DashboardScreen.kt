@@ -99,6 +99,7 @@ fun DashboardScreen(
                                 BalanceCard(
                                     summary = uiState.balanceSummary,
                                     isBalanceHidden = uiState.isBalanceHidden,
+                                    showBreakdown = uiState.showNetWorthBreakdown,
                                     onToggleVisibility = { viewModel.toggleBalanceVisibility() }
                                 )
                             }

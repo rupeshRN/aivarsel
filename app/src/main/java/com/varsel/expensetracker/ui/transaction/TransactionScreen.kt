@@ -180,14 +180,17 @@ fun TransactionScreen(
                     }
                 }
 
-                ExtendedFloatingActionButton(
+                FloatingActionButton(
                     onClick = { showAddTransactionSheet = true },
-                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("Add Entry", fontWeight = FontWeight.SemiBold) },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.testTag("add_transaction_fab")
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Entry"
+                    )
+                }
             }
         }
     ) { padding ->

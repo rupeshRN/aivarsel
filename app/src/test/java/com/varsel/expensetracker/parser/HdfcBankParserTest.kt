@@ -202,4 +202,81 @@ class HdfcBankParserTest {
             org.junit.Assert.assertFalse(tx.rawDescription.orEmpty().contains("Kodambakkam", ignoreCase = true))
         }
     }
+
+    @Test
+    fun testAtmCashWithdrawalWithMaskedCardAndReference() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            10/08/2026 NWD-123456XXXXXX1234-ATM CASH 00000000000018945 10/08/2026 5,000.00 15,000.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(5000.00, tx.amount, 0.001)
+        assertEquals(TransactionType.EXPENSE, tx.type)
+        assertEquals("18945", tx.referenceNumber)
+        org.junit.Assert.assertTrue("Description should include card ending: ${tx.description}", tx.description.contains("Card ending 1234"))
+        org.junit.Assert.assertTrue("Description should indicate ATM withdrawal: ${tx.description}", tx.description.contains("ATM"))
+        assertEquals(Category.TRANSFER, tx.category)
+    }
+
+    @Test
+    fun testEmiDebitAndBankCreditDepositAllZeroesReferenceClassifiedAsNull() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            05/08/2026 EMI 4923306 00000000000000000 05/08/2026 15,000.00 10,000.00
+            06/08/2026 CREDIT INTEREST CAPITALISED 00000000000000000 06/08/2026 350.00 10,350.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(2, transactions.size)
+
+        // EMI
+        val emiTx = transactions[0]
+        assertEquals(15000.00, emiTx.amount, 0.001)
+        assertEquals("EMI Payment", emiTx.description)
+        org.junit.Assert.assertNull("EMI with all zeroes reference must resolve to null", emiTx.referenceNumber)
+
+        // Credit Interest
+        val intTx = transactions[1]
+        assertEquals(350.00, intTx.amount, 0.001)
+        assertEquals(TransactionType.INCOME, intTx.type)
+        assertEquals("Credit Interest Capitalised", intTx.description)
+        org.junit.Assert.assertNull("Bank credit deposit with all zeroes reference must resolve to null", intTx.referenceNumber)
+    }
+
+    @Test
+    fun testInternalFundTransferReference() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            12/08/2026 FT-TRANSFER TO SAVINGS 0000FTIMPS012345 12/08/2026 10,000.00 25,000.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        assertEquals(10000.00, tx.amount, 0.001)
+        assertEquals("FTIMPS012345", tx.referenceNumber)
+    }
+
+    @Test
+    fun testMaskedCardInNarrationNotClassifiedAsReferenceNumber() {
+        val statement = """
+            Date Narration Chq./Ref.No. Value Dt Withdrawal Amt. Deposit Amt. Closing Balance
+            15/08/2026 POS-123456XXXXXX1234-STARBUCKS 000000000000000 15/08/2026 420.00 24,580.00
+        """.trimIndent()
+
+        val transactions = hdfcBankParser.parse(statement)
+        assertEquals(1, transactions.size)
+
+        val tx = transactions[0]
+        // 123456XXXXXX1234 must NOT be classified as reference number
+        org.junit.Assert.assertNull("Masked credit card number should not be referenceNumber", tx.referenceNumber)
+        // Must be used to build transaction description
+        org.junit.Assert.assertTrue("Description should include card ending: ${tx.description}", tx.description.contains("Card ending 1234"))
+        org.junit.Assert.assertTrue("Description should include merchant: ${tx.description}", tx.description.contains("Starbucks"))
+    }
 }
