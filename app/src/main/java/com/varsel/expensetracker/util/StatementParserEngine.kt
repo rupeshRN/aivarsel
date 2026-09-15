@@ -206,15 +206,25 @@ class StatementParserEngine @Inject constructor(
                 parser.parse(rawText)
             }
 
+        val bankName = when (parser) {
+            is IciciBankParser -> "ICICI Bank"
+            is IndianBankParser -> "Indian Bank"
+            is HdfcBankParser -> "HDFC Bank"
+            else -> "Bank Statement"
+        }
+
+        val ifscCode = accountDetailsExtractor.extractIfscCode(rawText)
+
         val accountNumber =
-            accountDetailsExtractor.extractAccountNumber(
-                rawText
-            )
-        
-        val accountIdentity =
-            accountNumber?.let {
-                accountIdentityGenerator.generate(it)
-            }
+            accountDetailsExtractor.extractAccountNumber(rawText)
+                ?: accountDetailsExtractor.extractAccountNumber(normalizedText)
+
+        val accountIdentity = if (accountNumber != null) {
+            accountIdentityGenerator.generate(accountNumber)
+        } else {
+            val fallbackKey = bankName.filter { it.isLetterOrDigit() } + (ifscCode ?: "")
+            accountIdentityGenerator.generate(if (fallbackKey.isNotBlank()) fallbackKey else "BANK_ACCOUNT")
+        }
 
         //--------------------------------------------------
         // Establish transaction identity BEFORE applying
@@ -236,10 +246,13 @@ class StatementParserEngine @Inject constructor(
                         ),
 
                     accountId =
-                        accountIdentity?.accountId,
+                        accountIdentity.accountId,
 
                     accountLast4 =
-                        accountIdentity?.accountLast4
+                        accountIdentity.accountLast4,
+
+                    bankName =
+                        if (transaction.bankName.isNullOrBlank()) bankName else transaction.bankName
                 )
             }
 
@@ -306,19 +319,6 @@ class StatementParserEngine @Inject constructor(
             statementDebits = resolvedSummary.totalDebits
         )
 
-        val bankName = when (parser) {
-            is IciciBankParser -> "ICICI Bank"
-            is IndianBankParser -> "Indian Bank"
-            is HdfcBankParser -> "HDFC Bank"
-            else -> "Bank Statement"
-        }
-
-        val ifscCode = accountDetailsExtractor.extractIfscCode(rawText)
-
-        val taggedTransactions = transactions.map { tx ->
-            if (tx.bankName.isNullOrBlank()) tx.copy(bankName = bankName) else tx
-        }
-
         //--------------------------------------------------
         // Final result returned to ImportViewModel.
         //--------------------------------------------------
@@ -326,10 +326,10 @@ class StatementParserEngine @Inject constructor(
         return StatementImportResult(
             summary = resolvedSummary,
             reconciliation = reconciliation,
-            transactions = taggedTransactions,
+            transactions = transactions,
             bankName = bankName,
-            accountId = accountIdentity?.accountId,
-            accountLast4 = accountIdentity?.accountLast4,
+            accountId = accountIdentity.accountId,
+            accountLast4 = accountIdentity.accountLast4,
             ifscCode = ifscCode
         )
 

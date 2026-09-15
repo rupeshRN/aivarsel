@@ -18,17 +18,17 @@ class AccountIdentityGenerator @Inject constructor() {
             accountNumber
                 .filter { it.isLetterOrDigit() }
 
-        require(normalizedAccountNumber.isNotBlank()) {
-            "Account number is empty."
-        }
+        val effectiveNumber = if (normalizedAccountNumber.isNotBlank()) normalizedAccountNumber else "ACCOUNT"
 
-        val last4 =
-            normalizedAccountNumber
-                .takeLast(4)
+        val last4 = if (effectiveNumber.length >= 4) {
+            effectiveNumber.takeLast(4)
+        } else {
+            effectiveNumber.padStart(4, '•')
+        }
 
         return AccountIdentity(
             accountId = sha256(
-                normalizedAccountNumber
+                effectiveNumber
             ),
             accountLast4 = last4
         )

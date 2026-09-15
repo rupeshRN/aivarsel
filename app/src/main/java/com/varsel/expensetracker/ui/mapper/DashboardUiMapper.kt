@@ -451,34 +451,45 @@ private fun calculateEffectiveExpense(
         snapshots: List<StatementSnapshotEntity>
     ): List<AccountBalanceUiModel> {
 
+        fun getSnapshotKey(snapshot: StatementSnapshotEntity): String {
+            return snapshot.accountId
+                ?: snapshot.bankName?.takeIf { it.isNotBlank() && it != "Bank Statement" }?.let { "bank_$it" }
+                ?: "snap_${snapshot.id}"
+        }
+
+        fun getTransactionKey(transaction: Transaction): String? {
+            return transaction.accountId
+                ?: transaction.bankName?.takeIf { it.isNotBlank() && it != "Bank Account" && it != "Bank Statement" && it != "Cash" }?.let { "bank_$it" }
+        }
+
         val transactionsByAccount =
             transactions.groupBy {
-                it.accountId
+                getTransactionKey(it)
             }
 
-        val accountIds =
+        val accountKeys =
             (
                 transactions.mapNotNull {
-                    it.accountId
+                    getTransactionKey(it)
                 } +
-                snapshots.mapNotNull {
-                    it.accountId
+                snapshots.map {
+                    getSnapshotKey(it)
                 }
             ).distinct()
 
         val result =
             mutableListOf<AccountBalanceUiModel>()
 
-        accountIds.forEach { accountId ->
+        accountKeys.forEach { accountKey ->
 
             val accountTransactions =
-                transactionsByAccount[accountId]
+                transactionsByAccount[accountKey]
                     .orEmpty()
 
             val latestSnapshot =
                 snapshots
                     .filter {
-                        it.accountId == accountId
+                        getSnapshotKey(it) == accountKey
                     }
                     .maxWithOrNull(
                         compareBy<StatementSnapshotEntity> {
@@ -500,7 +511,7 @@ private fun calculateEffectiveExpense(
             val accountLast4 =
                 latestSnapshot?.accountLast4
                     ?: accountTransactions
-                        .firstOrNull()
+                        .firstOrNull { !it.accountLast4.isNullOrBlank() }
                         ?.accountLast4
 
             val bankName = latestSnapshot?.bankName?.takeIf { it.isNotBlank() && it != "Bank Statement" }
@@ -529,7 +540,7 @@ private fun calculateEffectiveExpense(
         }
 
         //--------------------------------------------------
-        // Legacy transactions
+        // Legacy/Manual untagged transactions
         //--------------------------------------------------
 
         val legacyTransactions =
