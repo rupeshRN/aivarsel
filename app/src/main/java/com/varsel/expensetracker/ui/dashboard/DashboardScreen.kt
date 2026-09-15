@@ -53,6 +53,7 @@ fun DashboardScreen(
     onNavigateToLoans: () -> Unit = {},
     onNavigateToBudgets: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val activeSections by viewModel.activeHomeSections.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
@@ -65,9 +66,20 @@ fun DashboardScreen(
     val statementPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            onNavigateToImportWithUri(selectedUri)
+    uri?.let { selectedUri ->
+
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                selectedUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (_: SecurityException) {
+            // Some document providers do not support persistable permissions.
+            // Continue with the temporary URI permission.
         }
+
+        onNavigateToImportWithUri(selectedUri)
+    }
     }
 
     Box(
