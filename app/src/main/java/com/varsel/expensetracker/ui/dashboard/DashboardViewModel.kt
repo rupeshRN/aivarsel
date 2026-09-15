@@ -165,36 +165,43 @@ class DashboardViewModel @Inject constructor(
                 val totalGoalSaved = visibleGoals.sumOf { it.amountSpent }
 
                 val rawAccounts = baseDashboard.balanceSummary.accounts
-                val configuredAccounts = if (generalConfig.pinnedAccounts.isNotEmpty()) {
-                    val pinned = generalConfig.pinnedAccounts
-                    val matched = rawAccounts.filter { acc ->
-                        pinned.any { p ->
-                            p.equals(acc.bankShortName, ignoreCase = true) ||
-                            p.equals(acc.bankName, ignoreCase = true) ||
-                            acc.accountDisplayName.contains(p, ignoreCase = true)
-                        }
-                    }
-                    val listToOrder = if (matched.isNotEmpty()) matched else rawAccounts
-                    if (generalConfig.primaryAccount != "First Select" && generalConfig.primaryAccount.isNotBlank()) {
-                        val primary = generalConfig.primaryAccount
-                        listToOrder.sortedByDescending { acc ->
-                            primary.equals(acc.bankShortName, ignoreCase = true) ||
-                            primary.equals(acc.bankName, ignoreCase = true) ||
-                            acc.accountDisplayName.contains(primary, ignoreCase = true)
-                        }
-                    } else {
-                        listToOrder.sortedBy { acc ->
-                            val idx = pinned.indexOfFirst { p ->
-                                p.equals(acc.bankShortName, ignoreCase = true) ||
-                                p.equals(acc.bankName, ignoreCase = true) ||
-                                acc.accountDisplayName.contains(p, ignoreCase = true)
-                            }
-                            if (idx >= 0) idx else 999
-                        }
-                    }
-                } else {
-                    rawAccounts
+val configuredAccounts =
+    if (generalConfig.pinnedAccounts.isNotEmpty()) {
+
+        val pinned = generalConfig.pinnedAccounts
+
+        // Pinned accounts control ORDER only.
+        // They must never hide other imported bank accounts.
+        rawAccounts.sortedWith(
+            compareBy<AccountBalanceUiModel> { acc ->
+                val index = pinned.indexOfFirst { p ->
+                    p.equals(acc.bankShortName, ignoreCase = true) ||
+                    p.equals(acc.bankName, ignoreCase = true) ||
+                    acc.accountDisplayName.contains(p, ignoreCase = true)
                 }
+
+                if (index >= 0) index else Int.MAX_VALUE
+            }
+        )
+
+    } else if (
+        generalConfig.primaryAccount != "First Select" &&
+        generalConfig.primaryAccount.isNotBlank()
+    ) {
+
+        val primary = generalConfig.primaryAccount
+
+        // Primary account is placed first.
+        // All other accounts remain visible.
+        rawAccounts.sortedByDescending { acc ->
+            primary.equals(acc.bankShortName, ignoreCase = true) ||
+            primary.equals(acc.bankName, ignoreCase = true) ||
+            acc.accountDisplayName.contains(primary, ignoreCase = true)
+        }
+
+    } else {
+        rawAccounts
+    }
 
                 val recentTxns = when (generalConfig.homeTransactionsFilter) {
                     "EXPENSE" -> baseDashboard.recentTransactions.filter { !it.isIncome }
