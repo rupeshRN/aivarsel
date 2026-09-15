@@ -1,34 +1,46 @@
 package com.varsel.expensetracker.ui.reports.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.TrendingDown
 import androidx.compose.material.icons.outlined.TrendingUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.varsel.expensetracker.ui.reports.ReportsFlow
 import com.varsel.expensetracker.ui.theme.isDark
 import java.text.NumberFormat
 import java.util.Locale
@@ -39,81 +51,130 @@ fun NetCashFlowCard(
     actualIncome: Double,
     effectiveExpense: Double,
     netCashFlow: Double,
+    selectedFlow: ReportsFlow? = null,
+    onFlowSelected: ((ReportsFlow) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.isDark
 
-    // High Contrast Semantic Green & Red Palettes matching Dashboard & Transactions
     val incomeColor = if (isDark) Color(0xFF66BB6A) else Color(0xFF2E7D32)
     val expenseColor = if (isDark) Color(0xFFFF5252) else Color(0xFFC62828)
 
-    val incomePillBg = if (isDark) {
-        Color(0xFF1B5E20).copy(alpha = 0.25f)
+    val cardBackground = if (isDark) {
+        Brush.radialGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                Color(0xFF0F172A),
+                Color(0xFF020617)
+            ),
+            center = Offset(220f, 0f),
+            radius = 950f
+        )
     } else {
-        Color(0xFFE8F5E9)
+        Brush.radialGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.38f),
+                Color(0xFFFFFFFF),
+                Color(0xFFF8FAFC)
+            ),
+            center = Offset(220f, 0f),
+            radius = 850f
+        )
     }
 
-    val expensePillBg = if (isDark) {
-        Color(0xFFB71C1C).copy(alpha = 0.25f)
+    val cardBorderColor = if (isDark) {
+        Color(0xFF334155).copy(alpha = 0.55f)
     } else {
-        Color(0xFFFFEBEE)
+        Color(0xFFE2E8F0)
     }
 
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
-
     val isPositive = netCashFlow >= 0.0
     val netColor = if (isPositive) incomeColor else expenseColor
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Net Cash Flow",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+    // Savings rate percentage calculation
+    val savingsRate = if (actualIncome > 0.0) {
+        ((actualIncome - effectiveExpense) / actualIncome * 100.0).coerceIn(-100.0, 100.0)
+    } else if (effectiveExpense > 0.0) {
+        -100.0
+    } else {
+        0.0
+    }
 
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color.Transparent,
-                    border = BorderStroke(1.dp, netColor.copy(alpha = 0.4f))
+    val totalVolume = (actualIncome + effectiveExpense).coerceAtLeast(1.0)
+    val incomeProportion = (actualIncome / totalVolume).toFloat()
+    val animatedIncomeProportion by animateFloatAsState(
+        targetValue = incomeProportion,
+        animationSpec = tween(durationMillis = 600),
+        label = "income_ratio_anim"
+    )
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = if (isDark) 0.dp else 4.dp,
+        tonalElevation = 2.dp,
+        border = BorderStroke(1.dp, cardBorderColor)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(cardBackground)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Top Header Row: Micro-Label & Status Badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    Text(
+                        text = "NET CASH FLOW SUMMARY",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 10.sp,
+                            letterSpacing = 1.2.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                    )
+
+                    // Tactical Surplus/Deficit Pill with Savings Rate
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = netColor.copy(alpha = 0.14f),
+                        border = BorderStroke(1.dp, netColor.copy(alpha = 0.35f))
                     ) {
-                        Icon(
-                            imageVector = if (isPositive) Icons.Outlined.TrendingUp else Icons.Outlined.TrendingDown,
-                            contentDescription = null,
-                            tint = netColor,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = if (isPositive) "Surplus" else "Deficit",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = netColor
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isPositive) Icons.Outlined.TrendingUp else Icons.Outlined.TrendingDown,
+                                contentDescription = null,
+                                tint = netColor,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Text(
+                                text = if (isPositive) {
+                                    "Surplus • %.0f%% Saved".format(Locale.ENGLISH, abs(savingsRate))
+                                } else {
+                                    "Deficit • %.0f%%".format(Locale.ENGLISH, abs(savingsRate))
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                ),
+                                color = netColor
+                            )
+                        }
                     }
                 }
-            }
 
                 // Main Net Cash Flow Headline Display
                 Text(
