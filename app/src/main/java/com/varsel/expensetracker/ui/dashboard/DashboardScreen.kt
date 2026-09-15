@@ -29,6 +29,8 @@ import com.varsel.expensetracker.ui.dashboard.components.QuickActionBar
 import com.varsel.expensetracker.ui.model.TransactionUiModel
 import com.varsel.expensetracker.ui.transaction.components.AddTransactionBottomSheet
 import com.varsel.expensetracker.ui.transaction.components.ManualEntryMode
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 
 private sealed class FeatureDialogState {
     object None : FeatureDialogState()
