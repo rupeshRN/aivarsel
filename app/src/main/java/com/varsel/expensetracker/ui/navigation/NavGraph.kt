@@ -406,33 +406,25 @@ composable(AppDestination.Reports.route) {
             )
         }
 
-        composable(
-            route = "import_statement?initialUri={initialUri}",
-            arguments = listOf(
-                navArgument("initialUri") {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                }
-            )
-        ) { backStackEntry ->
-            val initialUriStr = backStackEntry.arguments?.getString("initialUri")
-            val initialUri = remember(initialUriStr) {
-                initialUriStr?.let { Uri.parse(Uri.decode(it)) }
-            }
+        composable("import_statement") {
 
-            ImportScreen(
-                initialFileUri = initialUri,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onNavigateToTransactions = {
-                    navController.navigate(AppDestination.Transactions.route) {
-                        popUpTo(AppDestination.Home.route)
-                        launchSingleTop = true
-                    }
-                }
-            )
+    val initialUri =
+        navController.previousBackStackEntry
+            ?.savedStateHandle
+            ?.get<Uri>("import_initial_uri")
+
+    ImportScreen(
+        initialFileUri = initialUri,
+        onBackClick = {
+            navController.popBackStack()
+        },
+        onNavigateToTransactions = {
+            navController.navigate(AppDestination.Transactions.route) {
+                popUpTo(AppDestination.Home.route)
+                launchSingleTop = true
+            }
+        }
+    )
         }
 
         composable("learning_rules") {
