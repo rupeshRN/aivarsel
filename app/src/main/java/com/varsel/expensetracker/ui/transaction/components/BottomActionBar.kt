@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,33 +20,22 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import java.text.NumberFormat
-import java.util.Locale
 
 @Composable
 fun BottomActionBar(
     onDeleteClick: () -> Unit,
     onSaveClick: () -> Unit,
     saveEnabled: Boolean = true,
-    isImported: Boolean = false,
-    amount: Double? = null,
-    isExpense: Boolean = true
+    isImported: Boolean = false
 ) {
-    val themeColor = if (isExpense) Color(0xFFEF4444) else Color(0xFF10B981)
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         OutlinedButton(
-            modifier = Modifier
-                .weight(0.9f)
-                .height(52.dp),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(14.dp),
             onClick = onDeleteClick,
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = if (isImported) {
@@ -71,39 +59,14 @@ fun BottomActionBar(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = if (isImported) "Locked" else "Delete",
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        val buttonText = if (!isImported && amount != null && amount > 0.0) {
-            val formatter = NumberFormat.getNumberInstance(Locale("en", "IN")).apply {
-                maximumFractionDigits = 2
-            }
-            "Save ₹${formatter.format(amount)}"
-        } else {
-            "Save Changes"
+            Text(if (isImported) "Locked" else "Delete")
         }
 
         Button(
-            modifier = Modifier
-                .weight(1.4f)
-                .height(52.dp)
-                .testTag("save_manual_transaction_button"),
-            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.weight(1.3f),
+            shape = RoundedCornerShape(14.dp),
             enabled = saveEnabled,
-            onClick = onSaveClick,
-            colors = if (!isImported) {
-                ButtonDefaults.buttonColors(
-                    containerColor = themeColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = themeColor.copy(alpha = 0.38f),
-                    disabledContentColor = Color.White.copy(alpha = 0.6f)
-                )
-            } else {
-                ButtonDefaults.buttonColors()
-            }
+            onClick = onSaveClick
         ) {
             Icon(
                 imageVector = Icons.Outlined.Check,
@@ -111,10 +74,8 @@ fun BottomActionBar(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = buttonText,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Save Changes")
         }
     }
 }
+

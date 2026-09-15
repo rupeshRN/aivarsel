@@ -65,7 +65,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.varsel.expensetracker.ui.transaction.components.BottomActionBar
 import com.varsel.expensetracker.ui.transaction.components.CategorySection
@@ -140,12 +139,6 @@ fun TransactionDetailScreen(
             val state = uiState as? TransactionDetailUiState.Loaded
             if (state != null) {
                 val isImported = state.transaction.isImported
-                val parsedAmount = if (!isImported) state.editableAmount.toDoubleOrNull() else null
-                val isCurrentExpense = if (!isImported) {
-                    state.selectedType == TransactionType.EXPENSE || state.selectedType == TransactionType.DEBIT
-                } else {
-                    state.transaction.type != TransactionType.INCOME && state.transaction.type != TransactionType.CREDIT
-                }
                 BottomActionBar(
                     onDeleteClick = {
                         if (isImported) {
@@ -168,10 +161,8 @@ fun TransactionDetailScreen(
                             )
                         }
                     },
-                    saveEnabled = (state.hasChanges || (!isImported && state.editableAmount.isNotBlank())) && !state.isSaving,
-                    isImported = isImported,
-                    amount = parsedAmount,
-                    isExpense = isCurrentExpense
+                    saveEnabled = state.hasChanges && !state.isSaving,
+                    isImported = isImported
                 )
             }
         }
@@ -205,46 +196,46 @@ fun TransactionDetailScreen(
 
                     val typeLabel = if (isTransfer) "(Transfer)" else transaction.type.name
 
-                    if (transaction.isImported) {
-                        // Hero Transaction Header Card for Bank Statement transactions
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(24.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                            )
+                    // Hero Transaction Header Card
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            Text(
+                                text = (if (isIncome) "+ ₹" else "- ₹") + "%,.2f".format(kotlin.math.abs(transaction.amount)),
+                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                                color = headerColor
+                            )
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(
-                                    text = (if (isIncome) "+ ₹" else "- ₹") + "%,.2f".format(kotlin.math.abs(transaction.amount)),
-                                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = headerColor
-                                )
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = headerColor.copy(alpha = 0.12f)
                                 ) {
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = headerColor.copy(alpha = 0.12f)
-                                    ) {
-                                        Text(
-                                            text = typeLabel,
-                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                            color = headerColor,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                        )
-                                    }
+                                    Text(
+                                        text = typeLabel,
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = headerColor,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
 
+                                if (transaction.isImported) {
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),
                                         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
@@ -256,43 +247,19 @@ fun TransactionDetailScreen(
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                         )
                                     }
+                                } else {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                                    ) {
+                                        Text(
+                                            text = "Manual Entry",
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
                                 }
-                            }
-                        }
-                    } else {
-                        // Header title for manual transactions matching Add entry page
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                val isEditExpense = state.selectedType == TransactionType.EXPENSE || state.selectedType == TransactionType.DEBIT
-                                Text(
-                                    text = if (isEditExpense) "Edit Expense" else "Edit Income",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = (-0.5).sp
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Update details for this manual transaction",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-                            ) {
-                                Text(
-                                    text = "Manual Entry",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
                             }
                         }
                     }
@@ -314,15 +281,13 @@ fun TransactionDetailScreen(
                     // Description
                     DescriptionSection(
                         description = state.editableDescription,
-                        onDescriptionChanged = viewModel::updateDescription,
-                        isManual = !transaction.isImported,
-                        transactionType = if (!transaction.isImported) state.selectedType else transaction.type
+                        onDescriptionChanged = viewModel::updateDescription
                     )
 
                     // Category
                     CategorySection(
                         selectedCategory = state.selectedCategory,
-                        transactionType = if (!transaction.isImported) state.selectedType else transaction.type,
+                        transactionType = transaction.type,
                         availableCategories = state.categories,
                         onCategorySelected = viewModel::updateCategory,
                         onNewCategoryClick = {
