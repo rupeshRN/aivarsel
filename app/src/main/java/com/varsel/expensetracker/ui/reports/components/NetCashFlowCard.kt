@@ -178,7 +178,7 @@ fun NetCashFlowCard(
 
                 // Main Net Cash Flow Headline Display
                 Text(
-                    text = currencyFormatter.format(abs(netCashFlow)),
+                    text = (if (isPositive) "+ " else "- ") + currencyFormatter.format(abs(netCashFlow)),
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontSize = 34.sp,
                         lineHeight = 40.sp,
@@ -226,7 +226,7 @@ fun NetCashFlowCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Income: %.0f%%".format(Locale.ENGLISH, animatedIncomeProportion * 100f),
+                            text = "Total Income: %.0f%%".format(Locale.ENGLISH, animatedIncomeProportion * 100f),
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                             color = incomeColor,
                             fontWeight = FontWeight.SemiBold

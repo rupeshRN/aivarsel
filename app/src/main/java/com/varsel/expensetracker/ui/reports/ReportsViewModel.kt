@@ -407,62 +407,33 @@ private fun updateSelectedMonth(
         flow: ReportsFlow = _uiState.value.selectedFlow
     ) {
         val state = _uiState.value
-        val isCompareMode = state.currentTab == ReportsTab.COMPARE
-
-        val effectiveRange = if (isCompareMode) {
-            val startMonth = state.selectedMonth.minusMonths((state.comparisonWindow.monthsCount - 1).toLong())
-            ReportDateRange(startMonth.atDay(1), state.selectedMonth.atEndOfMonth())
-        } else {
-            state.dateRange
-        }
-
         val items = buildCategoryDrillDownItems(
             categoryName = categoryName,
             flow = flow,
             selectedMonth = state.selectedMonth,
-            selectedAccountIds = state.selectedAccountIds,
-            customDateRange = effectiveRange
+            selectedAccountIds = state.selectedAccountIds
         )
 
-        val totalCategoryAmount = if (isCompareMode) {
-            val compItem = state.comparisonItems.firstOrNull { it.category.equals(categoryName, ignoreCase = true) }
-            compItem?.monthlyTotals?.sumOf { it.amount } ?: items.sumOf { it.amount }
-        } else {
-            when (flow) {
-                ReportsFlow.EXPENSES -> {
-                    state.expenseCategories.firstOrNull { it.category.equals(categoryName, ignoreCase = true) }?.totalAmount
-                        ?: items.sumOf { it.amount }
-                }
-                ReportsFlow.INCOME -> {
-                    state.incomeCategories.firstOrNull { it.category.equals(categoryName, ignoreCase = true) }?.totalAmount
-                        ?: items.sumOf { it.amount }
-                }
+        val totalCategoryAmount = when (flow) {
+            ReportsFlow.EXPENSES -> {
+                state.expenseCategories.firstOrNull { it.category.equals(categoryName, ignoreCase = true) }?.totalAmount
+                    ?: items.sumOf { it.amount }
+            }
+            ReportsFlow.INCOME -> {
+                state.incomeCategories.firstOrNull { it.category.equals(categoryName, ignoreCase = true) }?.totalAmount
+                    ?: items.sumOf { it.amount }
             }
         }
 
-        val totalFlowAmount = if (isCompareMode) {
-            val sum = state.comparisonItems.sumOf { item -> item.monthlyTotals.sumOf { it.amount } }
-            if (sum > 0.0) sum else items.sumOf { it.amount }
-        } else {
-            when (flow) {
-                ReportsFlow.EXPENSES -> state.cashFlow.effectiveExpense
-                ReportsFlow.INCOME -> state.cashFlow.actualIncome
-            }
+        val totalFlowAmount = when (flow) {
+            ReportsFlow.EXPENSES -> state.cashFlow.effectiveExpense
+            ReportsFlow.INCOME -> state.cashFlow.actualIncome
         }
 
         val percent = if (totalFlowAmount > 0.0) {
             (totalCategoryAmount / totalFlowAmount) * 100.0
         } else {
             0.0
-        }
-
-        val periodLabel = if (isCompareMode) {
-            val startMonth = state.selectedMonth.minusMonths((state.comparisonWindow.monthsCount - 1).toLong())
-            val startLabel = startMonth.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH)
-            val endLabel = state.selectedMonth.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH)
-            "Past ${state.comparisonWindow.label} ($startLabel - $endLabel ${state.selectedMonth.year})"
-        } else {
-            state.formattedPeriodLabel
         }
 
         _uiState.value = _uiState.value.copy(
@@ -472,7 +443,7 @@ private fun updateSelectedMonth(
                 flow = flow,
                 totalCategoryAmount = totalCategoryAmount,
                 percentOfTotal = percent,
-                periodLabel = periodLabel,
+                periodLabel = state.formattedPeriodLabel,
                 month = state.selectedMonth,
                 items = items,
                 searchQuery = ""
@@ -498,10 +469,9 @@ private fun updateSelectedMonth(
         categoryName: String,
         flow: ReportsFlow,
         selectedMonth: YearMonth,
-        selectedAccountIds: Set<String>,
-        customDateRange: ReportDateRange? = null
+        selectedAccountIds: Set<String>
     ): List<CategoryDrillDownItem> {
-        val reportRange = customDateRange ?: _uiState.value.dateRange
+        val reportRange = _uiState.value.dateRange
         val periodTransactions = latestTransactions.filter { transaction ->
             transaction.belongsToDateRange(
                 reportRange

@@ -63,7 +63,7 @@ class DashboardViewModel @Inject constructor(
                 displayName = "Cash / General"
             )
             val bankAccounts = snapshots.mapNotNull { snap ->
-                val id = snap.accountId ?: snap.bankName?.takeIf { it.isNotBlank() && it != "Bank Statement" }?.let { "bank_$it" } ?: return@mapNotNull null
+                val id = snap.accountId ?: return@mapNotNull null
                 val last4 = snap.accountLast4 ?: "••••"
                 val name = snap.bankName ?: "Bank Account"
                 AccountOption(
@@ -107,21 +107,16 @@ class DashboardViewModel @Inject constructor(
     private fun loadDashboard() {
         viewModelScope.launch(Dispatchers.IO) {
             combine(
-                combine(
-                    transactionRepository.getAllTransactions(),
-                    loanRepository.getAllLoansSummary(),
-                    appearanceRepository.appearanceConfig
-                ) { transactions, loans, appearanceConfig ->
-                    Triple(transactions, loans, appearanceConfig)
-                },
-                combine(
-                    budgetRepository.getAllBudgets(),
-                    generalPreferencesRepository.generalConfig,
-                    statementSnapshotRepository.observeAllSnapshots()
-                ) { rawBudgets, generalConfig, snapshots ->
-                    Triple(rawBudgets, generalConfig, snapshots)
-                }
-            ) { (transactions, loans, appearanceConfig), (rawBudgets, generalConfig, snapshots) ->
+                transactionRepository.getAllTransactions(),
+                loanRepository.getAllLoansSummary(),
+                appearanceRepository.appearanceConfig,
+                budgetRepository.getAllBudgets(),
+                generalPreferencesRepository.generalConfig
+            ) { transactions, loans, appearanceConfig, rawBudgets, generalConfig ->
+                val snapshots =
+                    statementSnapshotRepository
+                        .getAllSnapshots()
+
                 val baseDashboard =
                     dashboardUiMapper.map(
                         transactions = transactions,
