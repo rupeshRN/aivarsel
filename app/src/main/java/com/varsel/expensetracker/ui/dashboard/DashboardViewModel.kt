@@ -173,7 +173,7 @@ val configuredAccounts =
         // Pinned accounts control ORDER only.
         // They must never hide other imported bank accounts.
         rawAccounts.sortedWith(
-            compareBy<AccountBalanceUiModel> { acc ->
+            compareBy { acc ->
                 val index = pinned.indexOfFirst { p ->
                     p.equals(acc.bankShortName, ignoreCase = true) ||
                     p.equals(acc.bankName, ignoreCase = true) ||
