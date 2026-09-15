@@ -63,9 +63,13 @@ fun NavGraph(
                     navController.navigate("import_statement")
                 },
                 onNavigateToImportWithUri = { uri ->
-                    val encodedUri = Uri.encode(uri.toString())
-                    navController.navigate("import_statement?initialUri=$encodedUri")
-                },
+
+    navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.set("import_initial_uri", uri)
+
+    navController.navigate("import_statement")
+},
                 onNavigateToAnalytics = {
                     navController.navigate(AppDestination.Reports.route)
                 },
