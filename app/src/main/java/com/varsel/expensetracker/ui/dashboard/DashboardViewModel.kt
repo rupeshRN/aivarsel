@@ -4,14 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.varsel.expensetracker.data.local.dao.CategoryDao
 import com.varsel.expensetracker.data.local.entity.CategoryEntity
+import com.varsel.expensetracker.data.preference.AppearanceConfig
 import com.varsel.expensetracker.data.preference.AppearanceRepository
+import com.varsel.expensetracker.data.preference.GeneralConfig
 import com.varsel.expensetracker.data.preference.GeneralPreferencesRepository
 import com.varsel.expensetracker.data.preference.HomeSection
+import com.varsel.expensetracker.data.local.entity.BudgetEntity
 import com.varsel.expensetracker.domain.engine.AutoTransferReconciliationEngine
 import com.varsel.expensetracker.domain.model.Transaction
 import com.varsel.expensetracker.domain.model.TransactionType
+import com.varsel.expensetracker.domain.model.loan.LoanSummary
+import com.varsel.expensetracker.domain.model.recurring.RecurringItem
 import com.varsel.expensetracker.domain.repository.BudgetRepository
 import com.varsel.expensetracker.domain.repository.LoanRepository
+import com.varsel.expensetracker.domain.repository.RecurringRepository
 import com.varsel.expensetracker.domain.repository.StatementSnapshotRepository
 import com.varsel.expensetracker.domain.repository.TransactionRepository
 import com.varsel.expensetracker.domain.usecase.AddManualTransactionUseCase
@@ -38,6 +44,7 @@ class DashboardViewModel @Inject constructor(
     private val statementSnapshotRepository: StatementSnapshotRepository,
     private val loanRepository: LoanRepository,
     private val budgetRepository: BudgetRepository,
+    private val recurringRepository: RecurringRepository,
     private val dashboardUiMapper: DashboardUiMapper,
     private val autoTransferReconciliationEngine: AutoTransferReconciliationEngine,
     private val appearanceRepository: AppearanceRepository,
@@ -112,8 +119,20 @@ class DashboardViewModel @Inject constructor(
                 loanRepository.getAllLoansSummary(),
                 appearanceRepository.appearanceConfig,
                 budgetRepository.getAllBudgets(),
+                recurringRepository.getActiveRecurringItems(),
                 generalPreferencesRepository.generalConfig
-            ) { transactions, loans, appearanceConfig, rawBudgets, generalConfig ->
+            ) { args: Array<Any?> ->
+                @Suppress("UNCHECKED_CAST")
+                val transactions = args[0] as List<Transaction>
+                @Suppress("UNCHECKED_CAST")
+                val loans = args[1] as List<LoanSummary>
+                val appearanceConfig = args[2] as AppearanceConfig
+                @Suppress("UNCHECKED_CAST")
+                val rawBudgets = args[3] as List<BudgetEntity>
+                @Suppress("UNCHECKED_CAST")
+                val activeRecurring = args[4] as List<RecurringItem>
+                val generalConfig = args[5] as GeneralConfig
+
                 val snapshots =
                     statementSnapshotRepository
                         .getAllSnapshots()
@@ -228,6 +247,7 @@ class DashboardViewModel @Inject constructor(
                         balanceSummary = baseDashboard.balanceSummary.copy(accounts = configuredAccounts),
                         recentTransactions = recentTxns,
                         loans = loans,
+                        recurringItems = activeRecurring,
                         insights = insights,
                         allBudgets = expenseBudgets,
                         allGoals = savingsGoals,

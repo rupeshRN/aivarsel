@@ -23,6 +23,7 @@ import com.varsel.expensetracker.ui.components.AppIconLoadingView
 import com.varsel.expensetracker.ui.dashboard.components.BalanceCard
 import com.varsel.expensetracker.ui.dashboard.components.DashboardLoanWidget
 import com.varsel.expensetracker.ui.dashboard.components.DashboardRecentSection
+import com.varsel.expensetracker.ui.dashboard.components.DashboardRecurringWidget
 import com.varsel.expensetracker.ui.dashboard.components.GreetingHeader
 import com.varsel.expensetracker.ui.dashboard.components.InsightsCard
 import com.varsel.expensetracker.ui.dashboard.components.QuickActionBar
@@ -51,7 +52,8 @@ fun DashboardScreen(
     onNavigateToTransactionDetail: (Long) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToLoans: () -> Unit = {},
-    onNavigateToBudgets: () -> Unit = {}
+    onNavigateToBudgets: () -> Unit = {},
+    onNavigateToRecurring: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -179,6 +181,15 @@ fun DashboardScreen(
                                     currentSelection = uiState.homeBudgetsSelection,
                                     onSelectBudgets = { viewModel.setHomeBudgetsSelection(it) },
                                     onNavigateToBudgets = onNavigateToBudgets
+                                )
+                            }
+                        }
+
+                        HomeSection.RECURRING.id -> {
+                            item(key = "recurring_widget") {
+                                DashboardRecurringWidget(
+                                    recurringItems = uiState.recurringItems,
+                                    onNavigateToRecurring = onNavigateToRecurring
                                 )
                             }
                         }

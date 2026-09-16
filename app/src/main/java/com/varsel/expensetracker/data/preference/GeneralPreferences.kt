@@ -42,6 +42,7 @@ enum class HomeSection(val id: String, val displayName: String, val description:
     INSIGHTS("INSIGHTS", "Actionable Insights", "Smart spending flags and advisory tips"),
     LOANS("LOANS", "Loans & Liabilities", "Active loans and upcoming EMI schedule"),
     BUDGETS("BUDGETS", "Budgets", "Monthly category and total spending caps progress"),
+    RECURRING("RECURRING", "Recurring & Subscriptions", "Upcoming subscriptions, bills, and recurring income"),
     GOALS("GOALS", "Goals", "Savings targets and milestones tracker");
 
     companion object {

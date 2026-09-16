@@ -34,6 +34,7 @@ import com.varsel.expensetracker.ui.loan.add_edit.AddEditLoanScreen
 import com.varsel.expensetracker.ui.loan.detail.LoanDetailScreen
 import com.varsel.expensetracker.ui.more.MoreScreen
 import com.varsel.expensetracker.ui.more.SettingsDetailScreen
+import com.varsel.expensetracker.ui.recurring.RecurringSubscriptionsScreen
 import com.varsel.expensetracker.ui.reports.ReportsScreen
 import com.varsel.expensetracker.ui.settings.SettingsScreen
 import com.varsel.expensetracker.ui.settings.general.EditHomeScreen
@@ -103,6 +104,9 @@ fun NavGraph(
                         launchSingleTop = true
                         restoreState = true
                     }
+                },
+                onNavigateToRecurring = {
+                    navController.navigate("recurring")
                 }
             )
         }
@@ -325,11 +329,23 @@ composable(AppDestination.Reports.route) {
                         restoreState = true
                     }
                 },
+                onRecurringClick = {
+                    navController.navigate("recurring")
+                },
                 onSettingsClick = {
                     navController.navigate("settings")
                 },
                 onGeneralSettingsClick = {
                     navController.navigate("general_settings")
+                }
+            )
+        }
+
+        composable(AppDestination.Recurring.route) {
+            RecurringSubscriptionsScreen(
+                viewModel = hiltViewModel(),
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
