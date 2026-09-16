@@ -58,11 +58,6 @@ class GeneralSettingsViewModel @Inject constructor(
         repository.generalConfig
     ) { transactions, config ->
         val discovered = linkedSetOf<String>()
-        // Defaults matching user's reference mockup
-        discovered.add("IB")
-        discovered.add("IC")
-        discovered.add("IC Credit card")
-        discovered.add("HD")
 
         // Include any currently pinned accounts
         discovered.addAll(config.pinnedAccounts)
@@ -91,7 +86,7 @@ class GeneralSettingsViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = listOf("IB", "IC", "IC Credit card", "HD")
+        initialValue = emptyList()
     )
 
     fun setBiometricTimeout(timeout: BiometricTimeout) {
