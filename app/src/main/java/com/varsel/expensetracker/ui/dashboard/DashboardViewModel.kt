@@ -163,78 +163,58 @@ class DashboardViewModel @Inject constructor(
                 val totalBudgetSpent = visibleBudgets.sumOf { it.amountSpent }
                 val totalGoalTarget = visibleGoals.sumOf { it.budget.amount }
                 val totalGoalSaved = visibleGoals.sumOf { it.amountSpent }
+                val rawAccounts = baseDashboard.balanceSummary.accounts
 
-val rawAccounts = baseDashboard.balanceSummary.accounts
+                val pinnedAccounts = generalConfig.pinnedAccounts
+                    .map { it.trim() }
+                    .filter { it.isNotBlank() }
 
-val pinnedAccounts = generalConfig.pinnedAccounts
-    .map { it.trim() }
-    .filter { it.isNotBlank() }
+                val primaryAccount = generalConfig.primaryAccount.trim()
 
-val primaryAccount = generalConfig.primaryAccount
-    .trim()
+                fun accountMatchesName(
+                    account: AccountBalanceUiModel,
+                    configuredName: String
+                ): Boolean {
+                    val configured = configuredName.trim().lowercase()
 
-fun accountMatchesName(
-    account: AccountBalanceUiModel,
-    configuredName: String
-): Boolean {
-    val configured = configuredName.trim().lowercase()
+                    if (configured.isBlank()) return false
 
-    if (configured.isBlank()) return false
+                    val shortName = account.bankShortName
+                        .trim()
+                        .lowercase()
 
-    val shortName = account.bankShortName
-        .trim()
-        .lowercase()
+                    val bankName = account.bankName
+                        .trim()
+                        .lowercase()
 
-    val bankName = account.bankName
-        .trim()
-        .lowercase()
+                    val displayName = account.accountDisplayName
+                        .trim()
+                        .lowercase()
 
-    val displayName = account.accountDisplayName
-        .trim()
-        .lowercase()
+                    return configured == shortName ||
+                        configured == bankName ||
+                        configured == displayName
+                }
 
-    return configured == shortName ||
-        configured == bankName ||
-        configured == displayName
-}
+                val configuredAccounts =
+                    rawAccounts.sortedWith(
+                        compareBy<AccountBalanceUiModel> { account ->
 
-val configuredAccounts =
-    rawAccounts.sortedWith(
-        compareBy<AccountBalanceUiModel> { account ->
+                            val pinnedIndex = pinnedAccounts.indexOfFirst { pinnedName ->
+                                accountMatchesName(account, pinnedName)
+                            }
 
-            val pinnedIndex = pinnedAccounts.indexOfFirst { pinnedName ->
-                accountMatchesName(account, pinnedName)
-            }
+                            when {
+                                pinnedIndex >= 0 -> pinnedIndex
 
-            when {
-                pinnedIndex >= 0 -> pinnedIndex
+                                primaryAccount != "First Select" &&
+                                    primaryAccount.isNotBlank() &&
+                                    accountMatchesName(account, primaryAccount) -> -1
 
-                primaryAccount != "First Select" &&
-                    primaryAccount.isNotBlank() &&
-                    accountMatchesName(account, primaryAccount) -> -1
-
-                else -> Int.MAX_VALUE
-            }
-        }
-    )
-    } else if (
-        generalConfig.primaryAccount != "First Select" &&
-        generalConfig.primaryAccount.isNotBlank()
-    ) {
-
-        val primary = generalConfig.primaryAccount
-
-        // Primary account is placed first.
-        // All other accounts remain visible.
-        rawAccounts.sortedByDescending { acc ->
-            primary.equals(acc.bankShortName, ignoreCase = true) ||
-            primary.equals(acc.bankName, ignoreCase = true) ||
-            acc.accountDisplayName.contains(primary, ignoreCase = true)
-        }
-
-    } else {
-        rawAccounts
-    }
+                                else -> Int.MAX_VALUE
+                            }
+                        }
+                    )
 
                 val recentTxns = when (generalConfig.homeTransactionsFilter) {
                     "EXPENSE" -> baseDashboard.recentTransactions.filter { !it.isIncome }
