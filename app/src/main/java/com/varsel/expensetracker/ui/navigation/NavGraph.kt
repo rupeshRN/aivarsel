@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -57,7 +58,13 @@ fun NavGraph(
             DashboardScreen(
                 viewModel = hiltViewModel(),
                 onNavigateToAllTransactions = {
-                    navController.navigate(AppDestination.Transactions.route)
+                    navController.navigate(AppDestination.Transactions.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onNavigateToImport = {
                     navController.navigate("import_statement")
@@ -71,7 +78,13 @@ fun NavGraph(
     navController.navigate("import_statement")
 },
                 onNavigateToAnalytics = {
-                    navController.navigate(AppDestination.Reports.route)
+                    navController.navigate(AppDestination.Reports.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onNavigateToTransactionDetail = { transactionId ->
                     navController.navigate("transaction_detail/$transactionId")
@@ -83,7 +96,13 @@ fun NavGraph(
                     navController.navigate("loans")
                 },
                 onNavigateToBudgets = {
-                    navController.navigate("budgets")
+                    navController.navigate(AppDestination.Budgets.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }
@@ -271,16 +290,40 @@ composable(AppDestination.Reports.route) {
                     navController.navigate("import_statement")
                 },
                 onBudgetsClick = {
-                    navController.navigate(AppDestination.Budgets.route)
+                    navController.navigate(AppDestination.Budgets.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onReportsClick = {
-                    navController.navigate(AppDestination.Reports.route)
+                    navController.navigate(AppDestination.Reports.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onTransactionsClick = {
-                    navController.navigate(AppDestination.Transactions.route)
+                    navController.navigate(AppDestination.Transactions.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onHeatmapClick = {
-                    navController.navigate(AppDestination.CalendarHeatmap.route)
+                    navController.navigate(AppDestination.CalendarHeatmap.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 },
                 onSettingsClick = {
                     navController.navigate("settings")
