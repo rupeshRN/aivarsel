@@ -43,6 +43,17 @@ class DashboardUiMapper @Inject constructor(
                 currentMonth
             )
 
+            // Always anchor dashboard periods to the actual current calendar month.
+// Do not use the latest transaction month as a fallback.
+//
+// Example:
+// Current date: September 2026
+// "This Month" = September 1–30, 2026
+// Even if the latest transaction is from July or August.
+
+val anchorYear = currentYear
+val anchorMonth = currentMonth
+
         val hasCurrentMonthData = transactions.any { it.dateTimestamp >= currentMonthStart }
         val anchorYear: Int
         val anchorMonth: Int
