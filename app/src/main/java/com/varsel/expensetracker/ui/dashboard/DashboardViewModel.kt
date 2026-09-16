@@ -173,16 +173,35 @@ val configuredAccounts =
         // Pinned accounts control ORDER only.
         // They must never hide other imported bank accounts.
         rawAccounts.sortedWith(
-            compareBy { acc ->
-                val index = pinned.indexOfFirst { p ->
-                    p.equals(acc.bankShortName, ignoreCase = true) ||
-                    p.equals(acc.bankName, ignoreCase = true) ||
-                    acc.accountDisplayName.contains(p, ignoreCase = true)
-                }
+    compareBy { account ->
 
-                if (index >= 0) index else Int.MAX_VALUE
-            }
-        )
+        val accountIndex = pinned.indexOfFirst { pinnedName ->
+
+            val normalizedPinned =
+                pinnedName.trim().lowercase()
+
+            val normalizedShortName =
+                account.bankShortName.trim().lowercase()
+
+            val normalizedBankName =
+                account.bankName.trim().lowercase()
+
+            val normalizedDisplayName =
+                account.accountDisplayName.trim().lowercase()
+
+            normalizedPinned == normalizedShortName ||
+                normalizedPinned == normalizedBankName ||
+                normalizedDisplayName.contains(normalizedPinned)
+
+        }
+
+        if (accountIndex >= 0) {
+            accountIndex
+        } else {
+            Int.MAX_VALUE
+        }
+    }
+)
 
     } else if (
         generalConfig.primaryAccount != "First Select" &&
