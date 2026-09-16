@@ -75,7 +75,7 @@ data class GeneralConfig(
     val homeBudgetsSelection: String = "ALL",
     val homeGoalsSelection: String = "ALL",
     val primaryAccount: String = "First Select",
-    val pinnedAccounts: List<String> = listOf("IB", "IC", "IC Credit card", "HD"),
+    val pinnedAccounts: List<String> = emptyList(),
     val showNetWorthBreakdown: Boolean = true,
     val homeTransactionsCount: Int = 5,
     val homeTransactionsFilter: String = "ALL",
@@ -158,7 +158,7 @@ class GeneralPreferencesRepository @Inject constructor(
         val pinnedAccs = if (!pinnedAccsRaw.isNullOrBlank()) {
             pinnedAccsRaw.split(",").map { it.trim() }.filter { it.isNotBlank() }
         } else {
-            listOf("IB", "IC", "IC Credit card", "HD")
+            emptyList()
         }
         val showNwBreakdown = prefs[GeneralPreferenceKeys.SHOW_NET_WORTH_BREAKDOWN] ?: true
         val txnCount = prefs[GeneralPreferenceKeys.HOME_TRANSACTIONS_COUNT] ?: 5
