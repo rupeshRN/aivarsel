@@ -153,7 +153,27 @@ class GeneralPreferencesRepository @Inject constructor(
         val budgetCat = prefs[GeneralPreferenceKeys.BUDGET_WIDGET_CATEGORY] ?: "Food"
         val homeBudgets = prefs[GeneralPreferenceKeys.HOME_BUDGETS_SELECTION] ?: "ALL"
         val homeGoals = prefs[GeneralPreferenceKeys.HOME_GOALS_SELECTION] ?: "ALL"
-        val primaryAcc = prefs[GeneralPreferenceKeys.PRIMARY_ACCOUNT] ?: "First Select"
+        val legacyPrimaryAccounts = setOf(
+    "IC",
+    "IC Credit",
+    "IC Credit card",
+    "HD",
+    "SBI",
+    "SC"
+)
+
+val savedPrimaryAccount =
+    prefs[GeneralPreferenceKeys.PRIMARY_ACCOUNT] ?: "First Select"
+
+val primaryAcc =
+    if (legacyPrimaryAccounts.any {
+            it.equals(savedPrimaryAccount, ignoreCase = true)
+        }
+    ) {
+        "First Select"
+    } else {
+        savedPrimaryAccount
+    }
         val pinnedAccsRaw = prefs[GeneralPreferenceKeys.PINNED_ACCOUNTS]
         val legacyHardcodedAccounts = setOf(
     "IC",
