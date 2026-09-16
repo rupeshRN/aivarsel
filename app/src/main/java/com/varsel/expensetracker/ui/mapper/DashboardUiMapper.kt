@@ -36,37 +36,15 @@ class DashboardUiMapper @Inject constructor(
 
         val currentMonth =
             now.get(Calendar.MONTH)
-
-        val currentMonthStart =
-            calendarAtStartOfMonth(
-                currentYear,
-                currentMonth
-            )
-
-            // Always anchor dashboard periods to the actual current calendar month.
-// Do not use the latest transaction month as a fallback.
+// Always use the actual current calendar month.
+// Do not fall back to the latest transaction month.
 //
 // Example:
 // Current date: September 2026
-// "This Month" = September 1–30, 2026
-// Even if the latest transaction is from July or August.
+// This Month = September 1–September 30, 2026
 
 val anchorYear = currentYear
 val anchorMonth = currentMonth
-
-        val hasCurrentMonthData = transactions.any { it.dateTimestamp >= currentMonthStart }
-        val anchorYear: Int
-        val anchorMonth: Int
-
-        if (hasCurrentMonthData || transactions.isEmpty()) {
-            anchorYear = currentYear
-            anchorMonth = currentMonth
-        } else {
-            val latestTime = transactions.maxOf { it.dateTimestamp }
-            val cal = Calendar.getInstance().apply { timeInMillis = latestTime }
-            anchorYear = cal.get(Calendar.YEAR)
-            anchorMonth = cal.get(Calendar.MONTH)
-        }
 
         val activeMonthStart = calendarAtStartOfMonth(anchorYear, anchorMonth)
         val nextMonthStart = calendarAtStartOfMonth(
