@@ -509,6 +509,9 @@ private fun calculateEffectiveExpense(
 
             result.add(
                 AccountBalanceUiModel(
+
+                    accountId =
+    accountId,
                     bankName =
                         bankName,
 
@@ -558,6 +561,9 @@ private fun calculateEffectiveExpense(
 
             result.add(
                 AccountBalanceUiModel(
+
+                    accountId =
+            null,
                     bankName =
                         if (legacyBankName != "Bank Account") legacyBankName else "Other",
 
