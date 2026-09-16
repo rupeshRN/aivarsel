@@ -155,11 +155,28 @@ class GeneralPreferencesRepository @Inject constructor(
         val homeGoals = prefs[GeneralPreferenceKeys.HOME_GOALS_SELECTION] ?: "ALL"
         val primaryAcc = prefs[GeneralPreferenceKeys.PRIMARY_ACCOUNT] ?: "First Select"
         val pinnedAccsRaw = prefs[GeneralPreferenceKeys.PINNED_ACCOUNTS]
-        val pinnedAccs = if (!pinnedAccsRaw.isNullOrBlank()) {
-            pinnedAccsRaw.split(",").map { it.trim() }.filter { it.isNotBlank() }
-        } else {
-            emptyList()
+        val legacyHardcodedAccounts = setOf(
+    "IC",
+    "IC Credit",
+    "IC Credit card",
+    "HD",
+    "SBI",
+    "SC"
+)
+
+val pinnedAccs = if (!pinnedAccsRaw.isNullOrBlank()) {
+    pinnedAccsRaw
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotBlank() }
+        .filterNot { account ->
+            legacyHardcodedAccounts.any {
+                it.equals(account, ignoreCase = true)
+            }
         }
+} else {
+    emptyList()
+}
         val showNwBreakdown = prefs[GeneralPreferenceKeys.SHOW_NET_WORTH_BREAKDOWN] ?: true
         val txnCount = prefs[GeneralPreferenceKeys.HOME_TRANSACTIONS_COUNT] ?: 5
         val txnFilter = prefs[GeneralPreferenceKeys.HOME_TRANSACTIONS_FILTER] ?: "ALL"
