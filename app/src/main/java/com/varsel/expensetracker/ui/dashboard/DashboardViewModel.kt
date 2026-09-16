@@ -164,45 +164,59 @@ class DashboardViewModel @Inject constructor(
                 val totalGoalTarget = visibleGoals.sumOf { it.budget.amount }
                 val totalGoalSaved = visibleGoals.sumOf { it.amountSpent }
 
-                val rawAccounts = baseDashboard.balanceSummary.accounts
+val rawAccounts = baseDashboard.balanceSummary.accounts
+
+val pinnedAccounts = generalConfig.pinnedAccounts
+    .map { it.trim() }
+    .filter { it.isNotBlank() }
+
+val primaryAccount = generalConfig.primaryAccount
+    .trim()
+
+fun accountMatchesName(
+    account: AccountBalanceUiModel,
+    configuredName: String
+): Boolean {
+    val configured = configuredName.trim().lowercase()
+
+    if (configured.isBlank()) return false
+
+    val shortName = account.bankShortName
+        .trim()
+        .lowercase()
+
+    val bankName = account.bankName
+        .trim()
+        .lowercase()
+
+    val displayName = account.accountDisplayName
+        .trim()
+        .lowercase()
+
+    return configured == shortName ||
+        configured == bankName ||
+        configured == displayName
+}
+
 val configuredAccounts =
-    if (generalConfig.pinnedAccounts.isNotEmpty()) {
+    rawAccounts.sortedWith(
+        compareBy<AccountBalanceUiModel> { account ->
 
-        val pinned = generalConfig.pinnedAccounts
+            val pinnedIndex = pinnedAccounts.indexOfFirst { pinnedName ->
+                accountMatchesName(account, pinnedName)
+            }
 
-        // Pinned accounts control ORDER only.
-        // They must never hide other imported bank accounts.
-        rawAccounts.sortedWith(
-    compareBy { account ->
+            when {
+                pinnedIndex >= 0 -> pinnedIndex
 
-        val accountIndex = pinned.indexOfFirst { pinnedName ->
+                primaryAccount != "First Select" &&
+                    primaryAccount.isNotBlank() &&
+                    accountMatchesName(account, primaryAccount) -> -1
 
-            val normalizedPinned =
-                pinnedName.trim().lowercase()
-
-            val normalizedShortName =
-                account.bankShortName.trim().lowercase()
-
-            val normalizedBankName =
-                account.bankName.trim().lowercase()
-
-            val normalizedDisplayName =
-                account.accountDisplayName.trim().lowercase()
-
-            normalizedPinned == normalizedShortName ||
-                normalizedPinned == normalizedBankName ||
-                normalizedDisplayName.contains(normalizedPinned)
-
+                else -> Int.MAX_VALUE
+            }
         }
-
-        if (accountIndex >= 0) {
-            accountIndex
-        } else {
-            Int.MAX_VALUE
-        }
-    }
-)
-
+    )
     } else if (
         generalConfig.primaryAccount != "First Select" &&
         generalConfig.primaryAccount.isNotBlank()
