@@ -936,13 +936,11 @@ val financialEvents =
                 )
 
         } catch (exception: Exception) {
-
+            android.util.Log.e("ReportsViewModel", "Error generating report", exception)
             _uiState.value =
                 _uiState.value.copy(
                     isLoading = false,
-                    errorMessage =
-                        exception.message
-                            ?: "Unable to prepare report"
+                    errorMessage = "Unable to prepare report. Please try again."
                 )
         }
     }

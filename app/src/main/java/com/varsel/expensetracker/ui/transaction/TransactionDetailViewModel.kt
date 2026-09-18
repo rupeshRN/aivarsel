@@ -757,59 +757,71 @@ class TransactionDetailViewModel @Inject constructor(
                 role = current.selectedRole
             )
 
-            if (createSmartRule && (
-                current.transaction.description != current.editableDescription ||
-                current.transaction.category != current.selectedCategory
-            )) {
-                customRuleRepository.saveRule(
-                    pattern = current.transaction.description,
-                    displayDescription = current.editableDescription,
-                    categoryName = current.selectedCategory
-                )
-            }
-
-            transactionRepository.updateTransaction(updatedTransaction)
-
-            if (applyToSimilar && current.similarTransactions.isNotEmpty()) {
-                val similarToUpdate = current.similarTransactions.map { sim ->
-                    sim.copy(
-                        category = current.selectedCategory,
-                        description = if (updateDescriptionForSimilar && current.editableDescription.isNotBlank()) {
-                            current.editableDescription
-                        } else {
-                            sim.description
-                        }
+            try {
+                if (createSmartRule && (
+                    current.transaction.description != current.editableDescription ||
+                    current.transaction.category != current.selectedCategory
+                )) {
+                    customRuleRepository.saveRule(
+                        pattern = current.transaction.description,
+                        displayDescription = current.editableDescription,
+                        categoryName = current.selectedCategory
                     )
                 }
-                transactionRepository.updateTransactions(similarToUpdate)
-            }
 
-            _saveCompleted.value = true
-            _uiState.value = current.copy(
-                transaction = updatedTransaction,
-                selectedRole = updatedTransaction.role,
-                hasChanges = false,
-                isSaving = false,
-                transferErrorMessage = null
-            )
+                transactionRepository.updateTransaction(updatedTransaction)
+
+                if (applyToSimilar && current.similarTransactions.isNotEmpty()) {
+                    val similarToUpdate = current.similarTransactions.map { sim ->
+                        sim.copy(
+                            category = current.selectedCategory,
+                            description = if (updateDescriptionForSimilar && current.editableDescription.isNotBlank()) {
+                                current.editableDescription
+                            } else {
+                                sim.description
+                            }
+                        )
+                    }
+                    transactionRepository.updateTransactions(similarToUpdate)
+                }
+
+                _saveCompleted.value = true
+                _uiState.value = current.copy(
+                    transaction = updatedTransaction,
+                    selectedRole = updatedTransaction.role,
+                    hasChanges = false,
+                    isSaving = false,
+                    transferErrorMessage = null
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("TransactionDetailVM", "Failed to save transaction changes", e)
+                _uiState.value = current.copy(
+                    isSaving = false,
+                    transferErrorMessage = "Failed to save changes. Please try again."
+                )
+            }
         }
     }
 
     fun createCategory(name: String, isIncome: Boolean) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            val iconKey = com.varsel.expensetracker.category.CategoryIconCatalog.iconKeyForCategory(name, isIncome)
-            val typeStr = if (isIncome) "INCOME" else "EXPENSE"
-            val newCategory = com.varsel.expensetracker.data.local.entity.CategoryEntity(
-                name = name.trim(),
-                type = typeStr,
-                colorHex = if (isIncome) "#4CAF50" else "#2196F3",
-                iconName = iconKey,
-                budgetLimit = 0.0,
-                keywords = name.trim().uppercase()
-            )
-            categoryDao.insertCategory(newCategory)
-            updateCategory(name.trim())
+            try {
+                val iconKey = com.varsel.expensetracker.category.CategoryIconCatalog.iconKeyForCategory(name, isIncome)
+                val typeStr = if (isIncome) "INCOME" else "EXPENSE"
+                val newCategory = com.varsel.expensetracker.data.local.entity.CategoryEntity(
+                    name = name.trim(),
+                    type = typeStr,
+                    colorHex = if (isIncome) "#4CAF50" else "#2196F3",
+                    iconName = iconKey,
+                    budgetLimit = 0.0,
+                    keywords = name.trim().uppercase()
+                )
+                categoryDao.insertCategory(newCategory)
+                updateCategory(name.trim())
+            } catch (e: Exception) {
+                android.util.Log.e("TransactionDetailVM", "Failed to create category $name", e)
+            }
         }
     }
 
@@ -818,8 +830,12 @@ class TransactionDetailViewModel @Inject constructor(
         if (current.transaction.isImported) return
 
         viewModelScope.launch {
-            transactionRepository.deleteTransaction(current.transaction)
-            onDeleted()
+            try {
+                transactionRepository.deleteTransaction(current.transaction)
+                onDeleted()
+            } catch (e: Exception) {
+                android.util.Log.e("TransactionDetailVM", "Failed to delete transaction", e)
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.varsel.expensetracker.ui.import_statement
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.varsel.expensetracker.data.local.entity.StatementSnapshotEntity
@@ -130,13 +131,21 @@ class ImportViewModel @Inject constructor(
 
     fun deleteSnapshot(snapshotId: Long) {
         viewModelScope.launch(Dispatchers.IO) {
-            statementSnapshotRepository.deleteSnapshot(snapshotId)
+            try {
+                statementSnapshotRepository.deleteSnapshot(snapshotId)
+            } catch (e: Exception) {
+                Log.e("ImportViewModel", "Failed to delete snapshot with ID $snapshotId", e)
+            }
         }
     }
 
     fun deleteSnapshotWithTransactions(snapshot: StatementSnapshotEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            statementSnapshotRepository.deleteSnapshotWithTransactions(snapshot)
+            try {
+                statementSnapshotRepository.deleteSnapshotWithTransactions(snapshot)
+            } catch (e: Exception) {
+                Log.e("ImportViewModel", "Failed to delete snapshot and transactions", e)
+            }
         }
     }
 
@@ -403,11 +412,10 @@ class ImportViewModel @Inject constructor(
                     )
 
             } catch (e: Exception) {
-
+                Log.e("ImportViewModel", "Error parsing statement file", e)
                 _uiState.value =
                     ImportUiState.Error(
-                        e.message
-                            ?: e.stackTraceToString()
+                        "Unable to read or parse the selected statement. Please ensure the file is a valid, supported PDF or image statement."
                     )
             }
         }
@@ -520,11 +528,10 @@ class ImportViewModel @Inject constructor(
                     )
 
             } catch (e: Exception) {
-
+                Log.e("ImportViewModel", "Error saving imported transactions", e)
                 _uiState.value =
                     ImportUiState.Error(
-                        e.localizedMessage
-                            ?: "Failed to save transactions."
+                        "An unexpected error occurred while saving your transactions. Please try again."
                     )
             }
         }
