@@ -542,7 +542,6 @@ class ImportViewModel @Inject constructor(
         operationContext = "Advance Recurring Item After Match"
     )
                     }
-                    }
                 }
 
                 // 4. Clear pending result
