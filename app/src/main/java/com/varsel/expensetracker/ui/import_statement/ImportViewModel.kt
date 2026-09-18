@@ -559,7 +559,6 @@ class ImportViewModel @Inject constructor(
         operationContext = "Auto-Reconciliation After Import"
     )
                 }
-                }
 
                 _uiState.value =
                     ImportUiState.Saved(
