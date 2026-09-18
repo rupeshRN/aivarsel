@@ -1,5 +1,6 @@
 package com.varsel.expensetracker.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -18,11 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.varsel.expensetracker.R
 
 @Composable
 fun BankLogoBadge(
@@ -33,8 +36,8 @@ fun BankLogoBadge(
     val normalized = bankName.uppercase()
 
     when {
-        // Indian Bank (Official Deep Blue + Golden/Yellow emblem)
-        normalized.contains("INDIAN BANK") || normalized.contains("IDIB") || normalized.contains("IND BL") -> {
+        // Indian Bank (Official Emblem from SVG)
+        normalized.contains("INDIAN BANK") || normalized.contains("INDIANBANK") || normalized.contains("IDIB") || normalized.contains("IND BL") || normalized == "IB" -> {
             Surface(
                 modifier = modifier.size(size),
                 shape = RoundedCornerShape(8.dp),
@@ -44,30 +47,16 @@ fun BankLogoBadge(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color(0xFFFFB800),
-                            modifier = Modifier.size(size * 0.44f)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = "IB",
-                                    color = Color(0xFF003B70),
-                                    fontSize = (size.value * 0.20f).sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_bank_indian),
+                        contentDescription = "Indian Bank",
+                        modifier = Modifier.size(size * 0.78f)
+                    )
                 }
             }
         }
 
-        // HDFC Bank (Official Navy Blue + Red & White emblem)
+        // HDFC Bank (Official Emblem from Wikimedia Commons)
         normalized.contains("HDFC") -> {
             Surface(
                 modifier = modifier.size(size),
@@ -78,20 +67,11 @@ fun BankLogoBadge(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(size * 0.72f)
-                            .border(1.5.dp, Color(0xFFED1C24), RoundedCornerShape(3.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "HDFC",
-                            color = Color.White,
-                            fontSize = (size.value * 0.20f).sp,
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.SansSerif
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_bank_hdfc),
+                        contentDescription = "HDFC Bank",
+                        modifier = Modifier.size(size * 0.76f)
+                    )
                 }
             }
         }
@@ -125,7 +105,7 @@ fun BankLogoBadge(
             }
         }
 
-        // ICICI Bank (Official Maroon & Orange Arc)
+        // ICICI Bank (Official Flame 'i' Emblem from Wikimedia Commons)
         normalized.contains("ICICI") -> {
             Surface(
                 modifier = modifier.size(size),
@@ -136,24 +116,11 @@ fun BankLogoBadge(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(size * 0.28f)
-                                .clip(CircleShape)
-                                .background(Color(0xFFF37021))
-                        )
-                        Text(
-                            text = "i",
-                            color = Color.White,
-                            fontSize = (size.value * 0.44f).sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Serif
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_bank_icici),
+                        contentDescription = "ICICI Bank",
+                        modifier = Modifier.size(size * 0.78f)
+                    )
                 }
             }
         }
