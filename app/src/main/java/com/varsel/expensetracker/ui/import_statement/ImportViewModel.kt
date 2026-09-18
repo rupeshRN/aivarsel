@@ -366,9 +366,16 @@ class ImportViewModel @Inject constructor(
                 // --------------------------------------------------
 
                 val activeRecurringItems = try {
-                    recurringRepository.getActiveRecurringItems().first()
-                } catch (e: Exception) {
-                    emptyList()
+    recurringRepository.getActiveRecurringItems().first()
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    SafeErrorHandler.handle(
+        tag = "ImportViewModel",
+        throwable = e,
+        operationContext = "Load Recurring Items"
+    )
+    emptyList()
                 }
 
                 // --------------------------------------------------
