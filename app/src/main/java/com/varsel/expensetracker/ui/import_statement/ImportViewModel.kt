@@ -553,7 +553,12 @@ class ImportViewModel @Inject constructor(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    SafeLog.w("ImportViewModel", "Auto-reconciliation after import could not complete", e)
+    SafeErrorHandler.handle(
+        tag = "ImportViewModel",
+        throwable = e,
+        operationContext = "Auto-Reconciliation After Import"
+    )
+                }
                 }
 
                 _uiState.value =
