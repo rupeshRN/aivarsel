@@ -536,7 +536,12 @@ class ImportViewModel @Inject constructor(
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
-                        SafeLog.w("ImportViewModel", "Failed to advance recurring item after match", e)
+    SafeErrorHandler.handle(
+        tag = "ImportViewModel",
+        throwable = e,
+        operationContext = "Advance Recurring Item After Match"
+    )
+                    }
                     }
                 }
 
