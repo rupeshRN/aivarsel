@@ -232,12 +232,23 @@ class ImportViewModel @Inject constructor(
                 }
 
                 if (rawText.isBlank()) {
-                    _uiState.value =
-                        ImportUiState.Error(
-                            error = AppError.PdfExtractionFailed("Document contains no readable text"),
-                            message = AppErrorMessageMapper.getUserMessage(AppError.PdfExtractionFailed())
-                        )
-                    return@launch
+    val isPdf =
+        resolvedMimeType == "application/pdf" ||
+            uri.toString().endsWith(".pdf", true)
+
+    val error = if (isPdf) {
+        AppError.PdfExtractionFailed("Document contains no readable text")
+    } else {
+        AppError.OcrFailed("No readable text detected")
+    }
+
+    _uiState.value =
+        ImportUiState.Error(
+            error = error,
+            message = AppErrorMessageMapper.getUserMessage(error)
+        )
+
+    return@launch
                 }
 
                 // --------------------------------------------------
