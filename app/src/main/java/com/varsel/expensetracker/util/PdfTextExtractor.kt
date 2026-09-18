@@ -190,13 +190,15 @@ class PdfTextExtractor @Inject constructor() {
                     PdfExtractionResult.Success(text)
                 }
 
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: SecurityException) {
-                android.util.Log.e("PdfTextExtractor", "SecurityException reading PDF file", e)
+                SafeLog.e("PdfTextExtractor", "SecurityException reading PDF file", e)
                 PdfExtractionResult.Error(
                     "Permission denied: Could not access the selected PDF file."
                 )
             } catch (e: Exception) {
-                android.util.Log.e("PdfTextExtractor", "Exception processing PDF file", e)
+                SafeLog.e("PdfTextExtractor", "Exception processing PDF file", e)
                 PdfExtractionResult.Error("Unable to process the selected PDF file. Please ensure it is a valid document.")
             } finally {
 

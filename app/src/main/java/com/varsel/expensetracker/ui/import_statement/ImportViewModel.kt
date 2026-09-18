@@ -2,7 +2,6 @@ package com.varsel.expensetracker.ui.import_statement
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.varsel.expensetracker.data.local.entity.StatementSnapshotEntity
@@ -16,18 +15,26 @@ import com.varsel.expensetracker.domain.repository.RecurringRepository
 import com.varsel.expensetracker.domain.repository.StatementSnapshotRepository
 import com.varsel.expensetracker.domain.repository.TransactionRepository
 import com.varsel.expensetracker.parser.StatementImportResult
+import com.varsel.expensetracker.ui.util.UiErrorEvent
+import com.varsel.expensetracker.util.AppError
+import com.varsel.expensetracker.util.AppErrorMessageMapper
 import com.varsel.expensetracker.util.OcrManager
 import com.varsel.expensetracker.util.PdfExtractionResult
 import com.varsel.expensetracker.util.PdfTextExtractor
+import com.varsel.expensetracker.util.SafeErrorHandler
+import com.varsel.expensetracker.util.SafeLog
 import com.varsel.expensetracker.util.StatementParserEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -56,7 +63,8 @@ sealed interface ImportUiState {
     ) : ImportUiState
 
     data class Error(
-        val message: String
+        val error: AppError = AppError.Unknown(),
+        val message: String = AppErrorMessageMapper.getUserMessage(error)
     ) : ImportUiState
 }
 
@@ -92,6 +100,9 @@ class ImportViewModel @Inject constructor(
 
     val uiState: StateFlow<ImportUiState> =
         _uiState.asStateFlow()
+
+    private val _errorEvents = Channel<UiErrorEvent>(Channel.BUFFERED)
+    val errorEvents = _errorEvents.receiveAsFlow()
 
     private var pendingStatementResult: StatementImportResult? = null
 
@@ -133,8 +144,11 @@ class ImportViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 statementSnapshotRepository.deleteSnapshot(snapshotId)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("ImportViewModel", "Failed to delete snapshot with ID $snapshotId", e)
+                val appError = SafeErrorHandler.handle("ImportViewModel", e, "Delete Snapshot")
+                _errorEvents.send(UiErrorEvent(error = appError))
             }
         }
     }
@@ -143,8 +157,11 @@ class ImportViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 statementSnapshotRepository.deleteSnapshotWithTransactions(snapshot)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("ImportViewModel", "Failed to delete snapshot and transactions", e)
+                val appError = SafeErrorHandler.handle("ImportViewModel", e, "Delete Snapshot with Transactions")
+                _errorEvents.send(UiErrorEvent(error = appError))
             }
         }
     }
@@ -196,7 +213,8 @@ class ImportViewModel @Inject constructor(
                         }
                         is PdfExtractionResult.Error -> {
                             _uiState.value = ImportUiState.Error(
-                                pdfResult.message ?: "Could not extract text from document."
+                                error = AppError.PdfExtractionFailed(pdfResult.message),
+                                message = pdfResult.message ?: AppErrorMessageMapper.getUserMessage(AppError.PdfExtractionFailed())
                             )
                             return@launch
                         }
@@ -204,19 +222,21 @@ class ImportViewModel @Inject constructor(
                 } else {
                     val textFromImage = ocrManager.extractTextFromImage(context, uri)
                     if (textFromImage.isNullOrBlank()) {
-                        _uiState.value = ImportUiState.Error("Could not extract any text from the selected document.")
+                        _uiState.value = ImportUiState.Error(
+                            error = AppError.OcrFailed("No text detected in image"),
+                            message = AppErrorMessageMapper.getUserMessage(AppError.OcrFailed())
+                        )
                         return@launch
                     }
                     textFromImage
                 }
 
                 if (rawText.isBlank()) {
-
                     _uiState.value =
                         ImportUiState.Error(
-                            "Could not extract any text from the selected document."
+                            error = AppError.PdfExtractionFailed("Document contains no readable text"),
+                            message = AppErrorMessageMapper.getUserMessage(AppError.PdfExtractionFailed())
                         )
-
                     return@launch
                 }
 
@@ -236,12 +256,11 @@ class ImportViewModel @Inject constructor(
                     ParserDiagnosticsManager.latest
 
                 if (result.transactions.isEmpty()) {
-
                     _uiState.value =
                         ImportUiState.Error(
-                            "No transactions found."
+                            error = AppError.NoTransactionsFound,
+                            message = AppErrorMessageMapper.getUserMessage(AppError.NoTransactionsFound)
                         )
-
                     return@launch
                 }
 
@@ -255,14 +274,12 @@ class ImportViewModel @Inject constructor(
 
                 val credits =
                     result.transactions.count {
-
                         it.type ==
                             TransactionType.INCOME
                     }
 
                 val debits =
                     result.transactions.count {
-
                         it.type ==
                             TransactionType.EXPENSE
                     }
@@ -286,7 +303,6 @@ class ImportViewModel @Inject constructor(
 
                 val duplicateCount =
                     result.transactions.count {
-
                         val fingerprint =
                             it.transactionFingerprint
 
@@ -308,7 +324,6 @@ class ImportViewModel @Inject constructor(
 
                 val summary =
                     ImportSummary(
-
                         bankName =
                             result.bankName,
 
@@ -403,7 +418,6 @@ class ImportViewModel @Inject constructor(
 
                 _uiState.value =
                     ImportUiState.ParsedTransactions(
-
                         summary =
                             finalSummary,
 
@@ -411,11 +425,14 @@ class ImportViewModel @Inject constructor(
                             selectableTransactions
                     )
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("ImportViewModel", "Error parsing statement file", e)
+                val appError = SafeErrorHandler.handle("ImportViewModel", e, "Process Statement File")
                 _uiState.value =
                     ImportUiState.Error(
-                        "Unable to read or parse the selected statement. Please ensure the file is a valid, supported PDF or image statement."
+                        error = appError,
+                        message = AppErrorMessageMapper.getUserMessage(appError)
                     )
             }
         }
@@ -428,7 +445,6 @@ class ImportViewModel @Inject constructor(
     private suspend fun saveStatementSnapshot(
         result: StatementImportResult
     ) {
-
         val summary =
             result.summary
 
@@ -482,12 +498,11 @@ class ImportViewModel @Inject constructor(
                     }
 
                 if (selectedTransactions.isEmpty()) {
-
                     _uiState.value =
                         ImportUiState.Error(
-                            "Please select at least one transaction."
+                            error = AppError.InvalidInput(reason = "Please select at least one transaction to import."),
+                            message = "Please select at least one transaction to import."
                         )
-
                     return@launch
                 }
 
@@ -511,8 +526,10 @@ class ImportViewModel @Inject constructor(
                     try {
                         val advancedItem = recurringMatcherEngine.advanceOccurrenceAfterMatch(item, txDateTimestamp)
                         recurringRepository.updateRecurringItem(advancedItem)
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
-                        // Keep going if individual item update fails
+                        SafeLog.w("ImportViewModel", "Failed to advance recurring item after match", e)
                     }
                 }
 
@@ -520,18 +537,27 @@ class ImportViewModel @Inject constructor(
                 pendingStatementResult = null
 
                 // 5. Automatically reconcile and link transfers across accounts
-                autoTransferReconciliationEngine.reconcileTransfers()
+                try {
+                    autoTransferReconciliationEngine.reconcileTransfers()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    SafeLog.w("ImportViewModel", "Auto-reconciliation after import could not complete", e)
+                }
 
                 _uiState.value =
                     ImportUiState.Saved(
                         selectedTransactions.size
                     )
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                Log.e("ImportViewModel", "Error saving imported transactions", e)
+                val appError = SafeErrorHandler.handle("ImportViewModel", e, "Save Transactions")
                 _uiState.value =
                     ImportUiState.Error(
-                        "An unexpected error occurred while saving your transactions. Please try again."
+                        error = appError,
+                        message = AppErrorMessageMapper.getUserMessage(appError)
                     )
             }
         }
