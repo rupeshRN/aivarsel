@@ -39,70 +39,20 @@ class BankDetector @Inject constructor(
         if (hasIciciInHeader && !hasIndianBankInHeader && !hasHdfcInHeader) {
             return iciciBankParser
         }
+// 2. Validate parser structure before selecting a bank.
+// Never select a bank using scores or transaction narration alone.
 
-        // 2. Structural & Layout Checks
-        val hdfcTableSignals = listOf(
-            "NARRATION",
-            "CHQ./REF.NO.",
-            "VALUE DT",
-            "WITHDRAWAL AMT.",
-            "DEPOSIT AMT.",
-            "CLOSING BALANCE",
-            "HDFC BANK"
-        ).count { upper.contains(it) }
+if (hdfcBankParser.canParse(rawText)) {
+    return hdfcBankParser
+}
 
-        val iciciTableSignals = listOf(
-            "TRANSACTION REMARKS",
-            "WITHDRAWAL AMOUNT",
-            "DEPOSIT AMOUNT",
-            "CHEQUE NUMBER",
-            "BALANCE (INR)",
-            "SAVING ACCOUNT",
-            "CURRENT ACCOUNT",
-            "STATEMENT OF TRANSACTIONS"
-        ).count { upper.contains(it) }
+if (indianBankParser.canParse(rawText)) {
+    return indianBankParser
+}
 
-        val indianBankSignals = listOf(
-            "ACCOUNT ACTIVITY",
-            "DATE TRANSACTION DETAILS",
-            "TOTAL CREDITS",
-            "TOTAL DEBITS",
-            "OPENING BALANCE",
-            "CLOSING BALANCE"
-        ).count { upper.contains(it) }
-
-        val indianBankDateCount = Regex("""\b\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+\d{4}\b""", RegexOption.IGNORE_CASE).findAll(rawText).count()
-        val numericDateCount = Regex("""\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b""").findAll(rawText).count()
-
-        var hdfcScore = (if (hasHdfcInHeader) 10 else 0) + (hdfcTableSignals * 2)
-        var indianScore = (if (hasIndianBankInHeader) 10 else 0) + (indianBankSignals * 2) + (if (indianBankDateCount > 0) 5 else 0)
-        var iciciScore = (if (hasIciciInHeader) 10 else 0) + (iciciTableSignals * 2) + (if (numericDateCount > 0) 5 else 0)
-
-        if (upper.contains("HDFC")) hdfcScore += 5
-        if (upper.contains("INDIAN BANK")) indianScore += 5
-        if (upper.contains("ICICI")) iciciScore += 5
-
-        val maxScore = maxOf(hdfcScore, iciciScore, indianScore)
-        if (maxScore > 0) {
-            if (hdfcScore > iciciScore && hdfcScore > indianScore) {
-                return hdfcBankParser
-            } else if (iciciScore > indianScore && iciciScore > hdfcScore) {
-                return iciciBankParser
-            } else if (indianScore > iciciScore && indianScore > hdfcScore) {
-                return indianBankParser
-            }
-        }
-
-        // 3. Fallbacks using structural canParse validation
-        if (hdfcBankParser.canParse(rawText)) {
-            return hdfcBankParser
-        }
-        if (iciciBankParser.canParse(rawText)) {
-            return iciciBankParser
-        }
-        if (indianBankParser.canParse(rawText)) {
-            return indianBankParser
-        }
+if (iciciBankParser.canParse(rawText)) {
+    return iciciBankParser
+}
 
         throw IllegalArgumentException("Unsupported bank statement format. Supported banks: HDFC, ICICI, and Indian Bank.")
     }
