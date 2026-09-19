@@ -53,21 +53,21 @@ class TransactionBlockBuilder @Inject constructor(
                 continue
             }
 
-            // Stop when footer starts
+            // Stop when footer starts (only after at least one transaction row or table content has been captured)
             if (statementEndDetector.isStatementEnd(line)) {
+                if (transactionLines.any { transactionStartRegex.matches(it) }) {
+                    ParserDiagnosticsManager.latest =
+                        ParserDiagnosticsManager.latest.copy(
+                            stopReason = "Stopped by statement end\nLine: $line"
+                        )
+                    break
+                } else {
+                    // Pre-table summary line (e.g. Opening Balance at header) - skip rather than aborting
+                    continue
+                }
+            }
 
-    ParserDiagnosticsManager.latest =
-        ParserDiagnosticsManager.latest.copy(
-
-            stopReason =
-                "Stopped by statement end\nLine: $line"
-
-        )
-
-    break
-}
-
-    transactionLines.add(line)
+            transactionLines.add(line)
         }
 
         val blocks = mutableListOf<TransactionBlock>()

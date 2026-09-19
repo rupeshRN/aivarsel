@@ -110,4 +110,33 @@ class BankDetectorTest {
         assertTrue(result is BankDetectionResult.Supported)
         assertEquals("Indian Bank", (result as BankDetectionResult.Supported).displayName)
     }
+
+    @Test
+    fun `test Axis bank statement with ICICI UPI transactions correctly detects as Axis Bank`() {
+        val axisWithIciciNarration = """
+            AXIS BANK LIMITED
+            Statement of Account
+            IFSC: UTIB0000123
+            Date        Particulars                     Amount
+            01/05/2023  UPI/12345/Ram/ICIC0001234/test  500.00
+            02/05/2023  UPI/67890/payee@icici/bill      200.00
+        """.trimIndent()
+
+        val result = bankDetector.detectResult(axisWithIciciNarration)
+        assertTrue(result is BankDetectionResult.UnsupportedBank)
+        assertEquals("Axis Bank", (result as BankDetectionResult.UnsupportedBank).detectedBankName)
+    }
+
+    @Test
+    fun `test unknown Indian bank detected by IFSC code prefix`() {
+        val federalBankStatement = """
+            FEDERAL BANK
+            Customer Statement
+            Branch IFSC: FDRL0001234
+        """.trimIndent()
+
+        val result = bankDetector.detectResult(federalBankStatement)
+        assertTrue(result is BankDetectionResult.UnsupportedBank)
+        assertEquals("Federal Bank", (result as BankDetectionResult.UnsupportedBank).detectedBankName)
+    }
 }

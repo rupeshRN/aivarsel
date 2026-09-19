@@ -47,16 +47,31 @@ class IciciBankParser @Inject constructor(
     private var lastParsedRows: List<Pair<Transaction, Double?>> = emptyList()
     
 
-override fun canParse(rawText: String): Boolean {
+    override fun canParse(rawText: String): Boolean {
 
-    if (rawText.isBlank()) {
-        return false
-    }
+        if (rawText.isBlank()) {
+            return false
+        }
 
-    val upper = rawText.uppercase()
+        val upper = rawText.uppercase()
 
-    /*
-     * Normalize OCR/PDF text by removing spaces and punctuation.
+        // Reject if explicitly identified as another bank
+        val isCompetitorBank =
+            upper.contains("AXIS BANK") ||
+            upper.contains("STATE BANK OF INDIA") ||
+            upper.contains("YONO SBI") ||
+            upper.contains("HDFC BANK") ||
+            upper.contains("KOTAK MAHINDRA") ||
+            upper.contains("PUNJAB NATIONAL BANK") ||
+            upper.contains("BANK OF BARODA") ||
+            (upper.contains("INDIAN BANK") && !upper.contains("ICICI"))
+
+        if (isCompetitorBank) {
+            return false
+        }
+
+        /*
+         * Normalize OCR/PDF text by removing spaces and punctuation.
      *
      * Examples:
      * ICICI BANK  -> ICICIBANK

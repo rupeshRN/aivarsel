@@ -19,7 +19,7 @@ class AmountInterpreter @Inject constructor() {
             matches = plainAmountRegex.findAll(firstLine).toList()
         }
 
-        if (matches.size < 2) {
+        if (matches.isEmpty()) {
             return null
         }
 
@@ -31,11 +31,26 @@ class AmountInterpreter @Inject constructor() {
                 ?: return null
 
         val balance =
-            matches[1]
-                .groupValues[1]
-                .replace(",", "")
-                .toDoubleOrNull()
-                ?: return null
+            if (matches.size >= 2) {
+                matches[1]
+                    .groupValues[1]
+                    .replace(",", "")
+                    .toDoubleOrNull()
+                    ?: 0.0
+            } else {
+                0.0
+            }
+
+        // If only 1 amount found, determine type by line markers
+        if (matches.size == 1) {
+            val upper = firstLine.uppercase()
+            val isCredit = upper.contains(" CR") || upper.endsWith("CR") || upper.contains("CREDIT") || upper.contains("DEPOSIT") || upper.contains("BY ")
+            return ParsedAmount(
+                amount = firstAmount,
+                balance = balance,
+                type = if (isCredit) TransactionType.INCOME else TransactionType.EXPENSE
+            )
+        }
 
         //----------------------------------------------------
         // Determine whether first amount is Debit or Credit

@@ -6,16 +6,38 @@ import javax.inject.Singleton
 
 @Singleton
 class BankDetector @Inject constructor(
-    private val bankParserRegistry: BankParserRegistry
+    private val bankParserRegistry: BankParserRegistry,
+    private val heuristicMetadataScanner: HeuristicMetadataScanner = HeuristicMetadataScanner()
 ) {
 
     /**
-     * Detects the bank using every registered parser.
+     * Detects the bank using fast header metadata first, then falling back to registered parsers.
      *
-     * A bank is selected only when exactly one parser matches.
-     * Multiple matches are treated as ambiguous.
+     * 1. Heuristic Metadata Scanner checks the top 45 lines for RBI IFSC prefix and official branding.
+     * 2. If an unsupported bank is found (e.g. Axis Bank, SBI, Kotak), it immediately returns UnsupportedBank.
+     * 3. If a supported bank is definitively identified, it routes to that parser directly.
+     * 4. Otherwise, it queries registered parsers.
      */
     fun detectResult(rawText: String): BankDetectionResult {
+        // Step 1: High-speed header metadata scan (RBI IFSC + Official Branding)
+        when (val metadataResult = heuristicMetadataScanner.scan(rawText)) {
+            is BankMetadataResult.Unsupported -> {
+                return BankDetectionResult.UnsupportedBank(detectedBankName = metadataResult.detectedBankName)
+            }
+            is BankMetadataResult.Supported -> {
+                val matchedParser = bankParserRegistry.all().firstOrNull { it.bankId == metadataResult.bankId }
+                if (matchedParser != null && matchedParser.parser.canParse(rawText)) {
+                    return BankDetectionResult.Supported(
+                        parser = matchedParser.parser,
+                        bankId = matchedParser.bankId,
+                        displayName = matchedParser.displayName
+                    )
+                }
+            }
+            is BankMetadataResult.Unknown -> {
+                // Fall through to general registry scan
+            }
+        }
 
         val matchingParsers = bankParserRegistry
             .all()

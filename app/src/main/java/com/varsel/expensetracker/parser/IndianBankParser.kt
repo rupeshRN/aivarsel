@@ -165,7 +165,7 @@ class IndianBankParser @Inject constructor(
          */
         if (hasStrongIndianBankBrand) {
             return hasSupportedIndianBankDate &&
-                    (hasFullIndianBankTable || hasIndianBankTransactionTable || hasLegacyTable)
+                    (hasFullIndianBankTable || hasIndianBankTransactionTable || hasLegacyTable || upper.contains("STATEMENT") || upper.contains("ACCOUNT"))
         }
 
         /*
@@ -328,8 +328,11 @@ class IndianBankParser @Inject constructor(
             SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH),
             SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
             SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH),
             SimpleDateFormat("dd/MM/yy", Locale.ENGLISH),
-            SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
+            SimpleDateFormat("dd-MM-yy", Locale.ENGLISH),
+            SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
         )
 
         for (line in lines) {
