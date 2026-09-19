@@ -45,49 +45,53 @@ class IciciBankParser @Inject constructor(
     private val amountRegex = Regex("""(?<![.\d])([0-9]{1,3}(?:,[0-9]{3})*|\d+)\.(\d{2})(?![.\d])""")
 
     private var lastParsedRows: List<Pair<Transaction, Double?>> = emptyList()
+    
 override fun canParse(rawText: String): Boolean {
     val upper = rawText.uppercase()
 
-    // Reject statements belonging to another explicitly identified bank.
-    val belongsToIndianBank =
+    // Reject statements from other banks first.
+    // This must happen even if transaction narration contains "ICICI".
+    val isIndianBankStatement =
         upper.contains("INDIAN BANK") ||
         upper.contains("INDIANBANK") ||
-        upper.contains("IDIB")
+        upper.contains("IDIB") ||
+        (
+            upper.contains("ACCOUNT ACTIVITY") &&
+            upper.contains("DATE TRANSACTION DETAILS")
+        )
 
-    val belongsToHdfc =
+    val isHdfcStatement =
         upper.contains("HDFC BANK") ||
-        upper.contains("HDFCBANK") ||
-        upper.contains("HDFC")
+        upper.contains("HDFCBANK")
 
-    val belongsToSbi =
+    val isSbiStatement =
         upper.contains("STATE BANK OF INDIA") ||
-        upper.contains("SBI BANK") ||
-        upper.contains("SBIN") ||
-        upper.contains("YONO SBI")
+        upper.contains("YONO SBI") ||
+        upper.contains("SBIN")
 
-    if (
-        (belongsToIndianBank || belongsToHdfc || belongsToSbi) &&
-        !upper.contains("ICICI")
-    ) {
+    if (isIndianBankStatement || isHdfcStatement || isSbiStatement) {
         return false
     }
 
-    // Strong ICICI branding signals.
-    val hasIciciBrand =
-        upper.contains("ICICI BANK") ||
-        upper.contains("ICICIBANK") ||
-        upper.contains("ICICI.BANK") ||
-        upper.contains("TEAM ICICI BANK") ||
-        upper.contains("WWW.ICICI.BANK.IN") ||
-        Regex("""\bICICI\b""").containsMatchIn(upper)
+    // Check only the first 30 lines for genuine bank branding.
+    // Transaction descriptions must not identify the bank.
+    val header = rawText
+        .lines()
+        .take(30)
+        .joinToString("\n")
+        .uppercase()
 
-    // Distinctive ICICI table signals.
+    val hasIciciHeaderBrand =
+        header.contains("ICICI BANK") ||
+        header.contains("ICICIBANK") ||
+        header.contains("ICICI.BANK") ||
+        header.contains("TEAM ICICI BANK") ||
+        header.contains("WWW.ICICI.BANK.IN") ||
+        Regex("""\bICICI\b""").containsMatchIn(header)
+
+    // Distinctive ICICI table structure.
     val hasTransactionRemarks =
         upper.contains("TRANSACTION REMARKS")
-
-    val hasChequeNumber =
-        upper.contains("CHEQUE NUMBER") ||
-        upper.contains("CHEQUE NO")
 
     val hasWithdrawalAmount =
         upper.contains("WITHDRAWAL AMOUNT")
@@ -105,20 +109,23 @@ override fun canParse(rawText: String): Boolean {
         hasDepositAmount &&
         hasBalanceInr
 
+    val hasChequeNumber =
+        upper.contains("CHEQUE NUMBER") ||
+        upper.contains("CHEQUE NO")
+
     val alternateIciciTable =
-        hasChequeNumber &&
         hasTransactionRemarks &&
         hasWithdrawalAmount &&
-        hasDepositAmount
+        hasDepositAmount &&
+        hasChequeNumber
 
     /*
-     * IMPORTANT:
      * Numeric dates alone must never identify a document as ICICI.
-     * Generic Withdrawal + Deposit + Balance columns are also insufficient.
+     * Generic Withdrawal + Deposit + Balance columns are insufficient.
      */
-    return hasIciciBrand ||
-            distinctiveIciciTable ||
-            alternateIciciTable
+    return hasIciciHeaderBrand ||
+        distinctiveIciciTable ||
+        alternateIciciTable
 }
 
     override fun parse(rawText: String): List<Transaction> {
