@@ -92,6 +92,16 @@ object SafeErrorHandler {
                 AppError.FileNotFound
             }
 
+    //OCR Extractor exception       
+throwable is OcrExtractionException -> {
+    AppError.OcrFailed(
+        reason = throwable.message
+            ?.takeIf { it.isNotBlank() }
+            ?: "OCR processing failed"
+    )
+}
+
+
             // File I/O errors
             throwable is IOException -> {
 
