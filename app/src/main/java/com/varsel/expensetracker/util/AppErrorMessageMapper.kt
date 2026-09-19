@@ -45,6 +45,27 @@ object AppErrorMessageMapper {
             is AppError.ParsingFailed -> {
                 "Could not recognize transactions in this bank statement format."
             }
+            is AppError.UnsupportedBank -> {
+                if (!error.detectedBankName.isNullOrBlank()) {
+                    "Statements from ${error.detectedBankName} are not currently supported. Supported banks are Indian Bank, ICICI Bank, and HDFC Bank."
+                } else {
+                    "This bank is not currently supported. Supported banks are Indian Bank, ICICI Bank, and HDFC Bank."
+                }
+            }
+            is AppError.UnsupportedStatementFormat -> {
+                if (!error.bankName.isNullOrBlank()) {
+                    "This statement format for ${error.bankName} is not supported yet."
+                } else {
+                    "This statement format is not supported yet."
+                }
+            }
+            is AppError.AmbiguousBankStatement -> {
+                if (error.matchedBanks.isNotEmpty()) {
+                    "The statement matches multiple bank formats (${error.matchedBanks.joinToString(", ")}). Please provide a clearer statement PDF."
+                } else {
+                    "The statement matches multiple bank formats. Please provide a clearer statement PDF."
+                }
+            }
             is AppError.NoTransactionsFound -> {
                 "No transactions were detected in the selected statement."
             }
@@ -91,6 +112,9 @@ object AppErrorMessageMapper {
             is AppError.UnsupportedFile -> "Use PDF format"
             is AppError.PasswordRequired, is AppError.InvalidPassword -> "Enter password"
             is AppError.PdfExtractionFailed -> "Enable OCR mode"
+            is AppError.UnsupportedBank -> "Use supported bank"
+            is AppError.UnsupportedStatementFormat -> "Use standard statement layout"
+            is AppError.AmbiguousBankStatement -> "Select bank or upload clearer PDF"
             is AppError.ParsingFailed -> "Use developer parser tool or manual entry"
             is AppError.NoTransactionsFound -> "Check statement dates"
             is AppError.DuplicateData -> "View existing items"

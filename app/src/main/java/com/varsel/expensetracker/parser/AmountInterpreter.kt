@@ -5,12 +5,19 @@ import javax.inject.Inject
 
 class AmountInterpreter @Inject constructor() {
 
-    private val amountRegex =
+    private val inrAmountRegex =
         Regex("INR\\s*([\\d,]+\\.\\d{2})")
+
+    private val plainAmountRegex =
+        Regex("""(?<![.\d])([0-9]{1,3}(?:,[0-9]{3})*\.\d{2}|\d+\.\d{2})(?![.\d])""")
 
     fun parse(firstLine: String): ParsedAmount? {
 
-        val matches = amountRegex.findAll(firstLine).toList()
+        var matches = inrAmountRegex.findAll(firstLine).toList()
+
+        if (matches.size < 2) {
+            matches = plainAmountRegex.findAll(firstLine).toList()
+        }
 
         if (matches.size < 2) {
             return null
@@ -94,6 +101,18 @@ class AmountInterpreter @Inject constructor() {
                     amount = firstAmount,
                     balance = balance,
                     type = TransactionType.EXPENSE
+                )
+            }
+
+            // Explicit Credit indicator on the line (e.g. CR, CREDIT)
+            firstLine.uppercase().contains(" CR") ||
+            firstLine.uppercase().endsWith("CR") ||
+            firstLine.uppercase().contains("CREDIT") -> {
+
+                ParsedAmount(
+                    amount = firstAmount,
+                    balance = balance,
+                    type = TransactionType.INCOME
                 )
             }
 

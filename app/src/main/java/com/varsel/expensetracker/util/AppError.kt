@@ -45,6 +45,15 @@ sealed interface AppError {
     /** Statement parsing could not identify transaction table or bank structure */
     data class ParsingFailed(val reason: String? = null) : AppError
 
+    /** The bank identified in the statement is not currently supported */
+    data class UnsupportedBank(val detectedBankName: String? = null) : AppError
+
+    /** The bank is supported, but this specific statement format or layout is not yet supported */
+    data class UnsupportedStatementFormat(val bankName: String? = null, val reason: String? = null) : AppError
+
+    /** The statement matches signatures for multiple banks ambiguously */
+    data class AmbiguousBankStatement(val matchedBanks: List<String> = emptyList()) : AppError
+
     /** Statement was parsed but contains 0 valid transactions */
     data object NoTransactionsFound : AppError
 

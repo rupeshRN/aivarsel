@@ -14,6 +14,15 @@ sealed class BankDetectionResult {
         val possibleBankNames: List<String> = emptyList()
     ) : BankDetectionResult()
 
+    data class UnsupportedBank(
+        val detectedBankName: String
+    ) : BankDetectionResult()
+
+    data class UnsupportedFormat(
+        val bankName: String? = null,
+        val reason: String = "Unsupported statement format."
+    ) : BankDetectionResult()
+
     data class Unsupported(
         val reason: String
     ) : BankDetectionResult()

@@ -24,6 +24,20 @@ class IndianBankParser @Inject constructor(
 
         val upper = rawText.uppercase()
 
+        // 1. Strict negative check against competing banks to prevent false detection
+        val isCompetitorBank =
+            upper.contains("ICICI BANK") ||
+            upper.contains("HDFC BANK") ||
+            upper.contains("STATE BANK OF INDIA") ||
+            upper.contains("YONO SBI") ||
+            upper.contains("AXIS BANK") ||
+            upper.contains("KOTAK") ||
+            upper.contains("PUNJAB NATIONAL BANK")
+
+        if (isCompetitorBank) {
+            return false
+        }
+
         /*
          * ------------------------------------------------------------
          * 1. Examine the statement header separately.
@@ -47,7 +61,9 @@ class IndianBankParser @Inject constructor(
             header.contains("INDIAN BANK") ||
             header.contains("INDIANBANK") ||
             header.contains("IND BL") ||
-            header.contains("IDIB")
+            header.contains("IDIB") ||
+            upper.contains("WWW.INDIANBANK.IN") ||
+            upper.contains("INDIAN BANK")
 
         /*
          * ------------------------------------------------------------
@@ -78,8 +94,7 @@ class IndianBankParser @Inject constructor(
             ).containsMatchIn(header)
 
         /*
-         * Full layout characteristic of the supported Indian Bank
-         * statement format.
+         * Full layout characteristic of modern Indian Bank statement format.
          */
         val hasFullIndianBankTable =
             hasAccountActivity &&
@@ -89,10 +104,7 @@ class IndianBankParser @Inject constructor(
             hasBalance
 
         /*
-         * Alternate table evidence. This allows OCR variations where
-         * "ACCOUNT ACTIVITY" or one of the generic column labels is
-         * damaged/missing, while still requiring several coordinated
-         * statement characteristics.
+         * Alternate table evidence.
          */
         val hasIndianBankTransactionTable =
             hasTransactionDetails &&
@@ -102,53 +114,64 @@ class IndianBankParser @Inject constructor(
             hasDateColumn
 
         /*
+         * Legacy / standard statement table evidence (passbooks and older PDF layouts).
+         */
+        val hasLegacyParticulars =
+            upper.contains("PARTICULARS") ||
+            upper.contains("DESCRIPTION") ||
+            upper.contains("NARRATION") ||
+            upper.contains("STATEMENT OF ACCOUNT")
+
+        val hasLegacyDebits =
+            upper.contains("WITHDRAWAL") ||
+            upper.contains("DEBIT") ||
+            upper.contains("DEBITS") ||
+            upper.contains("DR")
+
+        val hasLegacyCredits =
+            upper.contains("DEPOSIT") ||
+            upper.contains("CREDIT") ||
+            upper.contains("CREDITS") ||
+            upper.contains("CR")
+
+        val hasLegacyTable =
+            hasLegacyParticulars &&
+            hasLegacyDebits &&
+            hasLegacyCredits &&
+            hasBalance
+
+        /*
          * ------------------------------------------------------------
          * 4. Date evidence
          * ------------------------------------------------------------
-         *
-         * Indian Bank statements supported by this parser normally use
-         * dates such as:
-         *
-         *   28 Jul 2026
-         *
-         * Keep the date test independent from bank-name detection so
-         * arbitrary documents containing the words "Indian Bank" are
-         * not accepted unless they also look like a statement.
          */
-        val hasSupportedIndianBankDate =
+        val hasAlphaDate =
             Regex(
-                """\b\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+\d{4}\b"""
-            ).containsMatchIn(rawText)
+                """\b\d{1,2}(?:\s+|[-/.])(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)(?:\s+|[-/.])\d{2,4}\b"""
+            ).containsMatchIn(upper)
+
+        val hasNumericDate =
+            Regex(
+                """\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b"""
+            ).containsMatchIn(upper)
+
+        val hasSupportedIndianBankDate =
+            hasAlphaDate || hasNumericDate
 
         /*
          * ------------------------------------------------------------
          * 5. Strong identity + statement evidence
          * ------------------------------------------------------------
-         *
-         * A real Indian Bank statement should normally have both:
-         *
-         *   bank identity
-         *   +
-         *   transaction/date evidence
-         *
-         * We intentionally do NOT accept the bank name alone.
          */
         if (hasStrongIndianBankBrand) {
-            return hasSupportedIndianBankDate ||
-                    hasFullIndianBankTable ||
-                    hasIndianBankTransactionTable
+            return hasSupportedIndianBankDate &&
+                    (hasFullIndianBankTable || hasIndianBankTransactionTable || hasLegacyTable)
         }
 
         /*
          * ------------------------------------------------------------
-         * 6. Layout-only detection
+         * 6. Layout-only detection (OCR fallback)
          * ------------------------------------------------------------
-         *
-         * This supports OCR where the bank logo/name is lost but the
-         * distinctive Indian Bank transaction table remains.
-         *
-         * Requiring several coordinated fields prevents generic PDFs
-         * from being classified as Indian Bank.
          */
         if (hasFullIndianBankTable && hasSupportedIndianBankDate) {
             return true
@@ -168,10 +191,18 @@ class IndianBankParser @Inject constructor(
         val transactions = mutableListOf<Transaction>()
 
         val dateRegex =
-            Regex("^\\d{1,2}\\s*[A-Za-z]{3}\\s+\\d{4}")
+            Regex("""^\s*(\d{1,2}(?:\s+|[-/.])(?:[A-Za-z]{3}|\d{1,2})(?:\s+|[-/.])\d{2,4})""")
 
-        val dateFormatter =
-            SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
+        val dateFormatters = listOf(
+            SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd/MMM/yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd/MM/yy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
+        )
 
         for (block in blocks) {
 
@@ -183,11 +214,17 @@ class IndianBankParser @Inject constructor(
             val dateMatch =
                 dateRegex.find(firstLine) ?: continue
 
-            val date = try {
-                dateFormatter.parse(dateMatch.value)
-            } catch (e: Exception) {
-                null
-            } ?: continue
+            val dateStr = dateMatch.groupValues[1].trim()
+            var parsedDate: java.util.Date? = null
+            for (formatter in dateFormatters) {
+                try {
+                    parsedDate = formatter.parse(dateStr)
+                    if (parsedDate != null) break
+                } catch (_: Exception) {
+                }
+            }
+
+            val date = parsedDate ?: continue
 
             val parsedAmount =
                 amountInterpreter.parse(firstLine)
@@ -210,6 +247,18 @@ class IndianBankParser @Inject constructor(
             rawDescription =
                 rawDescription.replaceFirst(
                     Regex("INR\\s*[\\d,]+\\.\\d{2}"),
+                    ""
+                )
+
+            rawDescription =
+                rawDescription.replaceFirst(
+                    Regex("""(?<![.\d])[\d,]+\.\d{2}(?![.\d])"""),
+                    ""
+                )
+
+            rawDescription =
+                rawDescription.replaceFirst(
+                    Regex("""(?<![.\d])[\d,]+\.\d{2}(?![.\d])"""),
                     ""
                 )
 
@@ -254,6 +303,86 @@ class IndianBankParser @Inject constructor(
                     referenceNumber = fields.reference,
                     bankName = "Indian Bank",
                     rawDescription = rawDescription
+                )
+            )
+        }
+
+        if (transactions.isNotEmpty()) {
+            return transactions
+        }
+
+        // Fallback for legacy format statements where blockBuilder produces no blocks
+        return parseLegacyFormat(rawText)
+    }
+
+    private fun parseLegacyFormat(rawText: String): List<Transaction> {
+        val transactions = mutableListOf<Transaction>()
+        val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        val dateRegex = Regex("""^\s*(\d{1,2}(?:\s+|[-/.])(?:[A-Za-z]{3}|\d{1,2})(?:\s+|[-/.])\d{2,4})""")
+        val amountRegex = Regex("""(?<![.\d])([0-9]{1,3}(?:,[0-9]{3})*\.\d{2}|\d+\.\d{2})(?![.\d])""")
+
+        val dateFormatters = listOf(
+            SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH),
+            SimpleDateFormat("dd/MM/yy", Locale.ENGLISH),
+            SimpleDateFormat("dd-MM-yy", Locale.ENGLISH)
+        )
+
+        for (line in lines) {
+            val dateMatch = dateRegex.find(line) ?: continue
+            val dateStr = dateMatch.groupValues[1].trim()
+            var date: java.util.Date? = null
+            for (formatter in dateFormatters) {
+                try {
+                    date = formatter.parse(dateStr)
+                    if (date != null) break
+                } catch (_: Exception) {
+                }
+            }
+
+            val parsedDate = date ?: continue
+            val amountMatches = amountRegex.findAll(line).toList()
+            if (amountMatches.isEmpty()) continue
+
+            val txAmount = amountMatches[0].groupValues[1].replace(",", "").toDoubleOrNull() ?: continue
+            if (txAmount <= 0.0) continue
+
+            val upperLine = line.uppercase()
+            val isIncome = upperLine.contains(" CR") || upperLine.endsWith("CR") || upperLine.contains("CREDIT") || upperLine.contains("DEPOSIT")
+            val type = if (isIncome) TransactionType.INCOME else TransactionType.EXPENSE
+
+            var desc = line
+                .replace(dateMatch.value, "")
+                .replace(amountMatches[0].value, "")
+            if (amountMatches.size > 1) {
+                desc = desc.replace(amountMatches[1].value, "")
+            }
+            desc = desc.replace(Regex("""\b(CR|DR|INR|Rs\.?)\b""", RegexOption.IGNORE_CASE), "")
+                .replace("|", " ")
+                .replace(Regex("""\s+"""), " ")
+                .trim()
+
+            if (desc.isBlank() || desc.length < 3) {
+                desc = if (isIncome) "Indian Bank Deposit" else "Indian Bank Withdrawal"
+            }
+
+            val cleanedDesc = descriptionCleaner.clean(desc)
+            val category = categoryRuleEngine.categorize(cleanedDesc, isIncome)
+
+            transactions.add(
+                Transaction(
+                    amount = txAmount,
+                    type = type,
+                    description = cleanedDesc,
+                    category = category.category,
+                    dateTimestamp = parsedDate.time,
+                    referenceNumber = null,
+                    bankName = "Indian Bank",
+                    rawDescription = desc
                 )
             )
         }

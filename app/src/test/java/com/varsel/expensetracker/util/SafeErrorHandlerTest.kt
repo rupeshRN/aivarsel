@@ -71,6 +71,44 @@ class SafeErrorHandlerTest {
     }
 
     @Test
+    fun `handle maps UnsupportedBankException to AppError UnsupportedBank`() {
+        val exception = com.varsel.expensetracker.parser.UnsupportedBankException("State Bank of India (SBI)")
+        val error = SafeErrorHandler.handle("TestTag", exception)
+
+        assertTrue(error is AppError.UnsupportedBank)
+        val unsupported = error as AppError.UnsupportedBank
+        assertEquals("State Bank of India (SBI)", unsupported.detectedBankName)
+
+        val message = AppErrorMessageMapper.getUserMessage(error)
+        assertTrue(message.contains("State Bank of India (SBI)"))
+        assertTrue(message.contains("Indian Bank, ICICI Bank, and HDFC Bank"))
+    }
+
+    @Test
+    fun `handle maps UnsupportedStatementFormatException to AppError UnsupportedStatementFormat`() {
+        val exception = com.varsel.expensetracker.parser.UnsupportedStatementFormatException("Indian Bank", "Layout altered")
+        val error = SafeErrorHandler.handle("TestTag", exception)
+
+        assertTrue(error is AppError.UnsupportedStatementFormat)
+        val formatError = error as AppError.UnsupportedStatementFormat
+        assertEquals("Indian Bank", formatError.bankName)
+        assertEquals("Layout altered", formatError.reason)
+
+        val message = AppErrorMessageMapper.getUserMessage(error)
+        assertTrue(message.contains("Indian Bank"))
+    }
+
+    @Test
+    fun `handle maps AmbiguousBankException to AppError AmbiguousBankStatement`() {
+        val exception = com.varsel.expensetracker.parser.AmbiguousBankException(listOf("Indian Bank", "HDFC Bank"))
+        val error = SafeErrorHandler.handle("TestTag", exception)
+
+        assertTrue(error is AppError.AmbiguousBankStatement)
+        val ambiguous = error as AppError.AmbiguousBankStatement
+        assertEquals(listOf("Indian Bank", "HDFC Bank"), ambiguous.matchedBanks)
+    }
+
+    @Test
     fun `sanitize masks account numbers, emails, passwords, and cards`() {
         val textWithAccount = "Processing account 123456789012 for user@example.com with password=mySecretPassword123"
         val sanitized = SafeLog.sanitize(textWithAccount)

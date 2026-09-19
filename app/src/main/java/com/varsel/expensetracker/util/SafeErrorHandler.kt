@@ -2,6 +2,7 @@ package com.varsel.expensetracker.util
 
 import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteException
+import com.varsel.expensetracker.parser.StatementParsingException
 import kotlinx.coroutines.CancellationException
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -125,18 +126,33 @@ throwable is OcrExtractionException -> {
                 )
             }
 
+            // Domain-specific statement parsing or bank detection error
+            throwable is StatementParsingException -> {
+                throwable.appError
+            }
+
             // Preserve the actual validation or parser reason
             throwable is IllegalArgumentException -> {
+                val rawMsg = throwable.message.orEmpty()
+                when {
+                    rawMsg.contains("matches multiple bank formats", ignoreCase = true) -> {
+                        AppError.AmbiguousBankStatement()
+                    }
+                    rawMsg.contains("No supported bank", ignoreCase = true) -> {
+                        AppError.UnsupportedStatementFormat(reason = rawMsg)
+                    }
+                    else -> {
+                        val reason =
+                            throwable.message
+                                ?.trim()
+                                ?.takeIf { it.isNotBlank() }
+                                ?: "Invalid input values provided"
 
-                val reason =
-                    throwable.message
-                        ?.trim()
-                        ?.takeIf { it.isNotBlank() }
-                        ?: "Invalid input values provided"
-
-                AppError.InvalidInput(
-                    reason = reason
-                )
+                        AppError.InvalidInput(
+                            reason = reason
+                        )
+                    }
+                }
             }
 
             // Default unclassified error

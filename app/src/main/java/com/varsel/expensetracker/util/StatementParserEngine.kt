@@ -19,6 +19,9 @@ import com.varsel.expensetracker.parser.TransactionFingerprintGenerator
 import com.varsel.expensetracker.parser.AccountDetailsExtractor
 import com.varsel.expensetracker.parser.AccountIdentityGenerator
 import com.varsel.expensetracker.parser.BankDetectionResult
+import com.varsel.expensetracker.parser.AmbiguousBankException
+import com.varsel.expensetracker.parser.UnsupportedBankException
+import com.varsel.expensetracker.parser.UnsupportedStatementFormatException
 
 
 /**
@@ -208,16 +211,19 @@ val parser = when (detectionResult) {
     }
 
     is BankDetectionResult.Ambiguous -> {
-        throw IllegalArgumentException(
-            "The statement matches multiple bank formats. " +
-                    "Please provide a clearer statement PDF."
-        )
+        throw AmbiguousBankException(detectionResult.possibleBankNames)
+    }
+
+    is BankDetectionResult.UnsupportedBank -> {
+        throw UnsupportedBankException(detectionResult.detectedBankName)
+    }
+
+    is BankDetectionResult.UnsupportedFormat -> {
+        throw UnsupportedStatementFormatException(detectionResult.bankName, detectionResult.reason)
     }
 
     is BankDetectionResult.Unsupported -> {
-        throw IllegalArgumentException(
-            detectionResult.reason
-        )
+        throw UnsupportedStatementFormatException(reason = detectionResult.reason)
     }
 }
 
@@ -327,18 +333,12 @@ val parser = when (detectionResult) {
         )
 
         val bankName = when (detectionResult) {
-
-    is BankDetectionResult.Supported -> {
-        detectionResult.displayName ?: "Bank Statement"
-    }
-
-    is BankDetectionResult.Ambiguous -> {
-        "Bank Statement"
-    }
-
-    is BankDetectionResult.Unsupported -> {
-        "Bank Statement"
-    }
+            is BankDetectionResult.Supported -> {
+                detectionResult.displayName ?: "Bank Statement"
+            }
+            else -> {
+                "Bank Statement"
+            }
         }
 
         val ifscCode = accountDetailsExtractor.extractIfscCode(rawText)

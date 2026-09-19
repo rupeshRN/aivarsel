@@ -10,27 +10,33 @@ data class RegisteredBankParser(
 )
 
 @Singleton
-class BankParserRegistry @Inject constructor(
-    private val indianBankParser: IndianBankParser,
-    private val iciciBankParser: IciciBankParser,
-    private val hdfcBankParser: HdfcBankParser
+open class BankParserRegistry(
+    private val parsersProvider: () -> List<RegisteredBankParser>
 ) {
-
-    fun all(): List<RegisteredBankParser> = listOf(
-        RegisteredBankParser(
-            bankId = "indian_bank",
-            displayName = "Indian Bank",
-            parser = indianBankParser
-        ),
-        RegisteredBankParser(
-            bankId = "icici_bank",
-            displayName = "ICICI Bank",
-            parser = iciciBankParser
-        ),
-        RegisteredBankParser(
-            bankId = "hdfc_bank",
-            displayName = "HDFC Bank",
-            parser = hdfcBankParser
+    @Inject
+    constructor(
+        indianBankParser: IndianBankParser,
+        iciciBankParser: IciciBankParser,
+        hdfcBankParser: HdfcBankParser
+    ) : this({
+        listOf(
+            RegisteredBankParser(
+                bankId = "indian_bank",
+                displayName = "Indian Bank",
+                parser = indianBankParser
+            ),
+            RegisteredBankParser(
+                bankId = "icici_bank",
+                displayName = "ICICI Bank",
+                parser = iciciBankParser
+            ),
+            RegisteredBankParser(
+                bankId = "hdfc_bank",
+                displayName = "HDFC Bank",
+                parser = hdfcBankParser
+            )
         )
-    )
+    })
+
+    open fun all(): List<RegisteredBankParser> = parsersProvider()
 }
