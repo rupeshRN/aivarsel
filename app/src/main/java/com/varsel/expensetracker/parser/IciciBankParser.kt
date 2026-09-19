@@ -46,129 +46,64 @@ class IciciBankParser @Inject constructor(
 
     private var lastParsedRows: List<Pair<Transaction, Double?>> = emptyList()
     
+
 override fun canParse(rawText: String): Boolean {
-    val upper = rawText.uppercase()
 
-    /*
-     * ------------------------------------------------------------
-     * 1. Strong competing-bank rejection
-     * ------------------------------------------------------------
-     *
-     * A transaction narration may contain the name of another bank,
-     * so competing-bank checks are based on statement-level evidence.
-     */
-    val isIndianBankStatement =
-        upper.contains("INDIAN BANK") ||
-        upper.contains("INDIANBANK") ||
-        upper.contains("IDIB") ||
-        (
-            upper.contains("ACCOUNT ACTIVITY") &&
-            upper.contains("DATE TRANSACTION DETAILS") &&
-            upper.contains("DEBITS") &&
-            upper.contains("CREDITS")
-        )
-
-    val isHdfcStatement =
-        upper.contains("HDFC BANK") ||
-        upper.contains("HDFCBANK") ||
-        upper.contains("HDFC BANKING")
-
-    val isSbiStatement =
-        upper.contains("STATE BANK OF INDIA") ||
-        upper.contains("STATE BANK OF INDIA.") ||
-        upper.contains("YONO SBI") ||
-        upper.contains("YONO") && upper.contains("SBI")
-
-    if (isIndianBankStatement || isHdfcStatement || isSbiStatement) {
+    if (rawText.isBlank()) {
         return false
     }
 
+    val upper = rawText.uppercase()
+
+    /*
+     * Normalize OCR/PDF text by removing spaces and punctuation.
+     *
+     * Examples:
+     * ICICI BANK  -> ICICIBANK
+     * BALANCE (INR) -> BALANCEINR
+     * WITHDRAWAL AMOUNT -> WITHDRAWALAMOUNT
+     */
+    val compact = upper.replace(
+        Regex("[^A-Z0-9]"),
+        ""
+    )
+
     /*
      * ------------------------------------------------------------
-     * 2. Header evidence
+     * 1. ICICI identity evidence
      * ------------------------------------------------------------
      *
-     * Bank identity should normally appear near the beginning of
-     * the document. Transaction narration must never be sufficient
-     * to identify ICICI.
+     * Search the complete extracted document because OCR may place
+     * the bank name beyond the first 40 lines.
      */
-    val header = rawText
-        .lines()
-        .take(40)
-        .joinToString("\n")
-        .uppercase()
-
-    val hasStrongIciciBrand =
-        header.contains("ICICI BANK LIMITED") ||
-        header.contains("ICICI BANK LTD") ||
-        header.contains("ICICI BANK") ||
-        header.contains("ICICIBANK") ||
-        header.contains("WWW.ICICIBANK.COM") ||
-        header.contains("WWW.ICICI.BANK.IN")
+    val hasIciciBankIdentity =
+        upper.contains("ICICI BANK") ||
+        compact.contains("ICICIBANK") ||
+        upper.contains("ICICI BANK LIMITED") ||
+        upper.contains("ICICI BANK LTD") ||
+        upper.contains("WWW.ICICIBANK.COM") ||
+        upper.contains("WWW.ICICI.BANK.IN")
 
     /*
-     * "ICICI" by itself is intentionally NOT enough.
-     *
-     * This prevents a random statement containing the word ICICI
-     * in a transaction description from being classified as ICICI.
+     * A standalone ICICI token is accepted only when combined with
+     * additional statement evidence.
      */
-    val hasIciciStandaloneBrand =
-        Regex("""\bICICI\b""").containsMatchIn(header)
+    val hasStandaloneIcici =
+        Regex("""\bICICI\b""").containsMatchIn(upper)
 
     /*
      * ------------------------------------------------------------
-     * 3. Distinctive ICICI transaction-table evidence
+     * 2. General statement evidence
      * ------------------------------------------------------------
      */
-    val hasTransactionRemarks =
-        upper.contains("TRANSACTION REMARKS")
+    val hasStatementKeyword =
+        upper.contains("ACCOUNT STATEMENT") ||
+        upper.contains("BANK STATEMENT") ||
+        upper.contains("TRANSACTION") ||
+        upper.contains("ACCOUNT NUMBER") ||
+        upper.contains("ACCOUNT NO") ||
+        upper.contains("BALANCE")
 
-    val hasTransactionDate =
-        upper.contains("TRANSACTION DATE")
-
-    val hasChequeNumber =
-        upper.contains("CHEQUE NUMBER") ||
-        upper.contains("CHEQUE NO")
-
-    val hasWithdrawalAmount =
-        upper.contains("WITHDRAWAL AMOUNT")
-
-    val hasDepositAmount =
-        upper.contains("DEPOSIT AMOUNT")
-
-    val hasBalanceInr =
-        upper.contains("BALANCE (INR)") ||
-        upper.contains("BALANCE(INR)")
-
-    /*
-     * Full distinctive ICICI layout.
-     */
-    val hasFullIciciTable =
-        hasTransactionDate &&
-        hasTransactionRemarks &&
-        hasWithdrawalAmount &&
-        hasDepositAmount &&
-        hasBalanceInr
-
-    /*
-     * Some ICICI exports/OCR variants omit "Transaction Date"
-     * but retain the distinctive amount columns and cheque column.
-     */
-    val hasAlternateIciciTable =
-        hasTransactionRemarks &&
-        hasWithdrawalAmount &&
-        hasDepositAmount &&
-        hasChequeNumber &&
-        hasBalanceInr
-
-    /*
-     * ------------------------------------------------------------
-     * 4. Transaction/date evidence
-     * ------------------------------------------------------------
-     *
-     * Dates alone are never bank identity evidence.
-     * They only strengthen an already distinctive ICICI layout.
-     */
     val hasSupportedDate =
         Regex(
             """\b\d{1,2}[./-](?:\d{1,2}|[A-Za-z]{3})[./-]\d{2,4}\b"""
@@ -182,37 +117,81 @@ override fun canParse(rawText: String): Boolean {
 
     /*
      * ------------------------------------------------------------
-     * 5. Final decision
+     * 3. Flexible ICICI table evidence
      * ------------------------------------------------------------
-     *
-     * Strong brand in the document header is sufficient.
-     *
-     * Otherwise, a distinctive ICICI table must have transaction
-     * evidence as well.
-     *
-     * A bare "ICICI" token is deliberately NOT sufficient.
      */
-    if (hasStrongIciciBrand) {
-        return true
-    }
+    val hasTransactionRemarks =
+        upper.contains("TRANSACTION REMARKS") ||
+        compact.contains("TRANSACTIONREMARKS")
 
-    if (hasFullIciciTable && hasSupportedDate) {
-        return true
-    }
+    val hasTransactionDate =
+        upper.contains("TRANSACTION DATE") ||
+        compact.contains("TRANSACTIONDATE")
 
-    if (hasAlternateIciciTable && hasSupportedDate) {
-        return true
-    }
+    val hasChequeNumber =
+        upper.contains("CHEQUE NUMBER") ||
+        upper.contains("CHEQUE NO") ||
+        compact.contains("CHEQUENUMBER") ||
+        compact.contains("CHEQUENO")
+
+    val hasWithdrawalAmount =
+        upper.contains("WITHDRAWAL AMOUNT") ||
+        compact.contains("WITHDRAWALAMOUNT") ||
+        upper.contains("WITHDRAWAL")
+
+    val hasDepositAmount =
+        upper.contains("DEPOSIT AMOUNT") ||
+        compact.contains("DEPOSITAMOUNT") ||
+        upper.contains("DEPOSIT")
+
+    val hasBalance =
+        upper.contains("BALANCE") ||
+        compact.contains("BALANCE")
+
+    val hasIciciTableEvidence =
+        (
+            hasTransactionRemarks &&
+                hasWithdrawalAmount &&
+                hasDepositAmount &&
+                hasBalance
+            ) ||
+            (
+                hasTransactionDate &&
+                    hasWithdrawalAmount &&
+                    hasDepositAmount &&
+                    hasBalance
+                ) ||
+            (
+                hasChequeNumber &&
+                    hasWithdrawalAmount &&
+                    hasDepositAmount &&
+                    hasBalance
+                )
 
     /*
-     * A standalone ICICI header token is accepted only when it is
-     * accompanied by a distinctive ICICI table. This gives OCR
-     * some tolerance without allowing generic documents through.
+     * ------------------------------------------------------------
+     * 4. Final detection decision
+     * ------------------------------------------------------------
+     *
+     * Strong ICICI identity requires statement evidence.
+     * A standalone ICICI token requires stronger table evidence.
      */
-    return hasIciciStandaloneBrand &&
-        hasFullIciciTable &&
-        hasSupportedDate
+    if (hasIciciBankIdentity) {
+        return hasStatementKeyword &&
+                (
+                    hasSupportedDate ||
+                        hasIciciTableEvidence
+                    )
+    }
+
+    if (hasStandaloneIcici) {
+        return hasIciciTableEvidence &&
+                hasSupportedDate
+    }
+
+    return false
 }
+
 
     override fun parse(rawText: String): List<Transaction> {
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
