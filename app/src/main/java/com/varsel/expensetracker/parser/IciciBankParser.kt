@@ -169,28 +169,26 @@ override fun canParse(rawText: String): Boolean {
                 )
 
     /*
-     * ------------------------------------------------------------
-     * 4. Final detection decision
-     * ------------------------------------------------------------
-     *
-     * Strong ICICI identity requires statement evidence.
-     * A standalone ICICI token requires stronger table evidence.
-     */
-    if (hasIciciBankIdentity) {
-        return hasStatementKeyword &&
-                (
-                    hasSupportedDate ||
-                        hasIciciTableEvidence
-                    )
-    }
-
-    if (hasStandaloneIcici) {
-        return hasIciciTableEvidence &&
-                hasSupportedDate
-    }
-
-    return false
+ * ------------------------------------------------------------
+ * 4. Final detection decision
+ * ------------------------------------------------------------
+ *
+ * A strong ICICI identity combined with a statement-related
+ * keyword is sufficient for bank detection.
+ *
+ * Transaction/table evidence is required only when the document
+ * contains a standalone ICICI reference.
+ */
+if (hasIciciBankIdentity) {
+    return hasStatementKeyword
 }
+
+if (hasStandaloneIcici) {
+    return hasIciciTableEvidence &&
+            hasSupportedDate
+}
+
+return false
 
 
     override fun parse(rawText: String): List<Transaction> {
