@@ -7,10 +7,11 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 /**
- * Centralized exception handler that maps raw Android/JVM exceptions to typed [AppError]s
- * while logging sanitized diagnostic details and strictly preserving coroutine cancellation.
+ * Centralized exception handler that maps raw Android/JVM exceptions
+ * to typed AppErrors while preserving useful diagnostic reasons.
  */
 object SafeErrorHandler {
+
 
     /**
      * Inspects a throwable, logs the sanitized failure, and maps it to a safe [AppError].
@@ -21,67 +22,119 @@ object SafeErrorHandler {
      * @return Safe [AppError] category.
      * @throws CancellationException Always re-thrown to avoid breaking coroutine lifecycles.
      */
+
     fun handle(
         tag: String,
         throwable: Throwable,
         operationContext: String? = null
     ): AppError {
-        // CRITICAL: Never swallow or convert CancellationException
+
         if (throwable is CancellationException) {
-            SafeLog.d(tag, "Operation cancelled: ${operationContext ?: "job"}")
+            SafeLog.d(
+                tag,
+                "Operation cancelled: ${operationContext ?: "job"}"
+            )
             throw throwable
         }
 
-        val contextPrefix = if (operationContext != null) "[$operationContext] " else ""
+        val contextPrefix =
+            if (operationContext != null) {
+                "[$operationContext] "
+            } else {
+                ""
+            }
+
         SafeLog.e(
             tag = tag,
-            message = "${contextPrefix}Failure occurred: ${throwable.javaClass.simpleName}",
+            message =
+                "${contextPrefix}Failure occurred: " +
+                        throwable.javaClass.simpleName,
             throwable = throwable
         )
 
-        val exceptionName = throwable.javaClass.name.lowercase()
-        val message = throwable.message?.lowercase() ?: ""
+        val exceptionName =
+            throwable.javaClass.name.lowercase()
+
+        val message =
+            throwable.message?.lowercase() ?: ""
 
         return when {
-            // Password-protected PDF / Invalid PDF password
-            exceptionName.contains("invalidpassword") || message.contains("password") -> {
+
+            // Password-protected PDF / invalid PDF password
+            exceptionName.contains("invalidpassword") ||
+                    message.contains("password") -> {
                 AppError.InvalidPassword
             }
-            // Room / SQLite database constraints (foreign keys, unique index violations)
+
+            // Room / SQLite constraint errors
             throwable is SQLiteConstraintException -> {
-                AppError.Database(operation = operationContext, isConstraintViolation = true)
+                AppError.Database(
+                    operation = operationContext,
+                    isConstraintViolation = true
+                )
             }
-            // Generic SQLite errors (disk I/O, corrupted db, locked table)
+
+            // Generic SQLite errors
             throwable is SQLiteException -> {
-                AppError.Database(operation = operationContext, isConstraintViolation = false)
+                AppError.Database(
+                    operation = operationContext,
+                    isConstraintViolation = false
+                )
             }
-            // Security / Permissions
+
+            // Security / permission errors
             throwable is SecurityException -> {
                 AppError.PermissionDenied
             }
-            // File not found / URI revoked
+
+            // File not found
             throwable is FileNotFoundException -> {
                 AppError.FileNotFound
             }
-            // File I/O errors (disk full, unexpected EOF, corrupted stream)
+
+            // File I/O errors
             throwable is IOException -> {
-                if (message.contains("enospc") || message.contains("no space left")) {
+
+                if (
+                    message.contains("enospc") ||
+                    message.contains("no space left")
+                ) {
                     AppError.StorageFull
                 } else {
-                    AppError.InvalidFile(reason = "File unreadable or damaged")
+                    AppError.InvalidFile(
+                        reason = "File unreadable or damaged"
+                    )
                 }
             }
-            // KeyStore / Crypto issues
-            exceptionName.contains("keystore") || exceptionName.contains("crypto") -> {
-                AppError.KeyStoreError(reason = "Security provider failure")
+
+            // KeyStore / cryptographic errors
+            exceptionName.contains("keystore") ||
+                    exceptionName.contains("crypto") -> {
+                AppError.KeyStoreError(
+                    reason = "Security provider failure"
+                )
             }
-            // Input validation errors
+
+            // Preserve the actual validation or parser reason
             throwable is IllegalArgumentException -> {
-                AppError.InvalidInput(reason = "Invalid input values provided")
+
+                val reason =
+                    throwable.message
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() }
+                        ?: "Invalid input values provided"
+
+                AppError.InvalidInput(
+                    reason = reason
+                )
             }
+
             // Default unclassified error
             else -> {
-                AppError.Unknown(technicalMessage = throwable.javaClass.simpleName)
+                AppError.Unknown(
+                    technicalMessage =
+                        throwable.javaClass.simpleName
+                )
             }
         }
     }
