@@ -189,7 +189,7 @@ if (hasStandaloneIcici) {
 }
 
 return false
-
+}
 
     override fun parse(rawText: String): List<Transaction> {
         val lines = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
