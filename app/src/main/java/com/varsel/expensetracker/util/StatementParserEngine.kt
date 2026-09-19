@@ -326,11 +326,19 @@ val parser = when (detectionResult) {
             statementDebits = resolvedSummary.totalDebits
         )
 
-        val bankName = when (parser) {
-            is IciciBankParser -> "ICICI Bank"
-            is IndianBankParser -> "Indian Bank"
-            is HdfcBankParser -> "HDFC Bank"
-            else -> "Bank Statement"
+        val bankName = when (detectionResult) {
+
+    is BankDetectionResult.Supported -> {
+        detectionResult.displayName ?: "Bank Statement"
+    }
+
+    is BankDetectionResult.Ambiguous -> {
+        "Bank Statement"
+    }
+
+    is BankDetectionResult.Unsupported -> {
+        "Bank Statement"
+    }
         }
 
         val ifscCode = accountDetailsExtractor.extractIfscCode(rawText)
