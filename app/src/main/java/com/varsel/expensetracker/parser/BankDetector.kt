@@ -10,22 +10,21 @@ class BankDetector @Inject constructor(
 ) {
 
     /**
-     * Detects a statement using all registered bank parsers.
+     * Detects the bank using every registered parser.
      *
      * A bank is selected only when exactly one parser matches.
-     * Multiple matches are treated as ambiguous rather than guessing.
+     * Multiple matches are treated as ambiguous.
      */
     fun detectResult(rawText: String): BankDetectionResult {
+
         val matchingParsers = bankParserRegistry
             .all()
             .filter { registeredParser ->
                 registeredParser.parser.canParse(rawText)
             }
-            .map { registeredParser ->
-                registeredParser.parser
-            }
 
         return when {
+
             matchingParsers.isEmpty() -> {
                 BankDetectionResult.Unsupported(
                     reason = "No supported bank statement format was detected."
@@ -33,23 +32,32 @@ class BankDetector @Inject constructor(
             }
 
             matchingParsers.size == 1 -> {
+
+                val match = matchingParsers.first()
+
                 BankDetectionResult.Supported(
-                    parser = matchingParsers.first()
+                    parser = match.parser,
+                    bankId = match.bankId,
+                    displayName = match.displayName
                 )
             }
 
             else -> {
+
                 BankDetectionResult.Ambiguous(
-                    parsers = matchingParsers
+                    parsers = matchingParsers.map { it.parser },
+                    possibleBankIds = matchingParsers.map { it.bankId },
+                    possibleBankNames = matchingParsers.map { it.displayName }
                 )
             }
         }
     }
 
     /**
-     * Compatibility method used by the existing StatementParserEngine.
+     * Compatibility method used by StatementParserEngine.
      */
     fun detect(rawText: String): StatementParser {
+
         return when (val result = detectResult(rawText)) {
 
             is BankDetectionResult.Supported -> {
@@ -57,15 +65,21 @@ class BankDetector @Inject constructor(
             }
 
             is BankDetectionResult.Ambiguous -> {
+
+                val bankNames = result.possibleBankNames
+                    .joinToString(", ")
+
                 throw IllegalArgumentException(
-                    "The statement matches multiple bank formats. " +
-                            "Please provide a clearer statement PDF."
+                    "The statement matches multiple bank formats: $bankNames"
                 )
             }
 
             is BankDetectionResult.Unsupported -> {
-                throw IllegalArgumentException(result.reason)
+                throw IllegalArgumentException(
+                    result.reason
+                )
             }
+            
         }
     }
 }
