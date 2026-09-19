@@ -650,3 +650,4 @@ return false
     private fun parseDate(dateStr: String): Long? {
         return DateParserUtils.parseDate(dateStr)
     }
+}
