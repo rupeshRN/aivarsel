@@ -18,6 +18,7 @@ import javax.inject.Inject
 import com.varsel.expensetracker.parser.TransactionFingerprintGenerator
 import com.varsel.expensetracker.parser.AccountDetailsExtractor
 import com.varsel.expensetracker.parser.AccountIdentityGenerator
+import com.varsel.expensetracker.parser.BankDetectionResult
 
 
 /**
@@ -198,8 +199,27 @@ class StatementParserEngine @Inject constructor(
         // Detect bank and execute the correct parser.
         //--------------------------------------------------
 
-        val parser =
-            bankDetector.detect(rawText)
+        val detectionResult = bankDetector.detectResult(rawText)
+
+val parser = when (detectionResult) {
+
+    is BankDetectionResult.Supported -> {
+        detectionResult.parser
+    }
+
+    is BankDetectionResult.Ambiguous -> {
+        throw IllegalArgumentException(
+            "The statement matches multiple bank formats. " +
+                    "Please provide a clearer statement PDF."
+        )
+    }
+
+    is BankDetectionResult.Unsupported -> {
+        throw IllegalArgumentException(
+            detectionResult.reason
+        )
+    }
+}
 
         val parsedTransactions =
             parser.parse(normalizedText).ifEmpty {
