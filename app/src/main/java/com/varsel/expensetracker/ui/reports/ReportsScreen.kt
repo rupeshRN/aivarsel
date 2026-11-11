@@ -106,11 +106,7 @@ fun ReportsScreen(
             viewModel::selectComparisonFlow,
 
         onComparisonCategoryClick = { category ->
-            if (uiState.comparisonFlow == ReportsFlow.EXPENSES) {
-                viewModel.selectExpenseCategory(category)
-            } else {
-                viewModel.selectIncomeCategory(category)
-            }
+            viewModel.openComparisonCategoryDrillDown(category)
         },
 
         onFlowSelected =
@@ -195,6 +191,7 @@ fun ReportsScreen(
                 }
             },
             onSearchQueryChange = viewModel::updateDrillDownSearch,
+            onSelectMonthFilter = viewModel::selectDrillDownMonthFilter,
             onTransactionClick = onTransactionClick,
             onFinancialEventClick = onFinancialEventClick
         )
